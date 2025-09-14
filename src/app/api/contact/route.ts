@@ -10,11 +10,6 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 async function validateTurnstile(token: string): Promise<boolean> {
   if (!token) return false
   
-  // Bypass en développement
-  if (process.env.NODE_ENV === 'development' && token === 'DEV_BYPASS_TOKEN') {
-    return true
-  }
-  
   try {
     const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',

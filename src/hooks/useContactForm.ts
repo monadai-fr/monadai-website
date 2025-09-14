@@ -35,11 +35,8 @@ export function useContactForm() {
     setFormState('loading')
     setServerMessage('')
 
-    // Vérification CAPTCHA côté client (bypass en développement)
-    const isDev = process.env.NODE_ENV === 'development'
-    const finalCaptchaToken = isDev ? 'DEV_BYPASS_TOKEN' : captchaToken
-    
-    if (!finalCaptchaToken) {
+    // Vérification CAPTCHA côté client
+    if (!captchaToken) {
       setFormState('error')
       setServerMessage('Veuillez compléter la vérification sécurité.')
       return
@@ -53,7 +50,7 @@ export function useContactForm() {
         },
         body: JSON.stringify({
           ...data,
-          captchaToken: finalCaptchaToken,
+          captchaToken,
           website: honeypotValue // Honeypot field
         })
       })
@@ -94,9 +91,7 @@ export function useContactForm() {
     form.reset()
   }
 
-  // Logique CAPTCHA : valide en dev, nécessite token en prod
-  const isDev = process.env.NODE_ENV === 'development'
-  const isCaptchaValid = isDev || !!captchaToken
+  // Validation CAPTCHA : token requis
 
   return {
     form,
@@ -112,6 +107,6 @@ export function useContactForm() {
     setCaptchaToken,
     honeypotValue,
     setHoneypotValue,
-    isCaptchaValid
+    isCaptchaValid: !!captchaToken
   }
 }

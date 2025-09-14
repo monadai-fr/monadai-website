@@ -25,18 +25,6 @@ export default function TurnstileCaptcha({
   const [error, setError] = useState<string | null>(null)
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
-  const isDev = process.env.NODE_ENV === 'development'
-
-  // Désactiver Turnstile en développement 
-  if (isDev) {
-    return (
-      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-blue-700 text-sm">
-          🔧 <strong>Mode Développement :</strong> CAPTCHA désactivé
-        </p>
-      </div>
-    )
-  }
 
   if (!siteKey) {
     console.error('❌ NEXT_PUBLIC_TURNSTILE_SITE_KEY manquant')
