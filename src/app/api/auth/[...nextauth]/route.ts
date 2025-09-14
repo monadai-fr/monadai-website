@@ -18,13 +18,7 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       // 🔒 SÉCURITÉ : Seul votre email est autorisé
-      if (user.email === ADMIN_EMAIL) {
-        console.log(`✅ Admin login autorisé: ${user.email}`)
-        return true
-      }
-      
-      console.log(`❌ Accès refusé pour: ${user.email}`)
-      return false // Refuse tous les autres comptes Google
+      return user.email === ADMIN_EMAIL
     },
     
     async session({ session, token }) {
@@ -48,8 +42,8 @@ const handler = NextAuth({
     strategy: 'jwt',
     maxAge: 60 * 60, // 1 heure comme demandé (au lieu de 24h)
   },
-  // Utiliser pages NextAuth.js par défaut (plus simple et sans bug)
-  debug: process.env.NODE_ENV === 'development', // Debug en dev seulement
+  // Production configuration
+  debug: false
 })
 
 export { handler as GET, handler as POST }

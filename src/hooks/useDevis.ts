@@ -18,7 +18,7 @@ export interface DevisState {
   addons: DevisAddons
 }
 
-// Tarifs ajustés étudiant - marché français 2025
+// Tarifs MonadAI - marché français 2025
 const SERVICE_PRICES = {
   web: 1500,      // Sites vitrines/e-commerce base
   ia: 2000,       // Chatbots/automatisation base  

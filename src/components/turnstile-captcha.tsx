@@ -27,7 +27,6 @@ export default function TurnstileCaptcha({
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
   if (!siteKey) {
-    console.error('❌ NEXT_PUBLIC_TURNSTILE_SITE_KEY manquant')
     return null
   }
 
