@@ -1,0 +1,101 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --green-sapin: #1B4332;
+  --green-sapin-light: #2D5A47;
+  --green-sapin-dark: #0F2419;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-green-sapin: var(--green-sapin);
+  --color-green-sapin-light: var(--green-sapin-light);
+  --color-green-sapin-dark: var(--green-sapin-dark);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+  
+  /* Custom animations */
+  --animate-mesh-rotate: mesh-rotate 60s ease-in-out infinite;
+  --animate-fade-in: fade-in 0.6s ease-out forwards;
+  --animate-slide-up: slide-up 0.6s ease-out forwards;
+  --animate-scale-hover: scale-hover 0.3s ease-out forwards;
+}
+
+@keyframes mesh-rotate {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  33% { transform: rotate(120deg) scale(1.1); }
+  66% { transform: rotate(240deg) scale(0.9); }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slide-up {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-hover {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+/* Mesh gradient background (without animation) */
+.mesh-gradient {
+  background: linear-gradient(45deg, 
+    rgba(255, 255, 255, 1) 0%, 
+    rgba(27, 67, 50, 0.03) 25%,
+    rgba(45, 90, 71, 0.02) 50%,
+    rgba(255, 255, 255, 1) 75%,
+    rgba(27, 67, 50, 0.05) 100%
+  );
+}
+
+/* Utility classes for animations */
+.animate-fade-in { animation: var(--animate-fade-in); }
+.animate-slide-up { animation: var(--animate-slide-up); }
+.animate-scale-hover:hover { animation: var(--animate-scale-hover); }
+
+/* Placeholder styles cohérents - plus subtils que le texte saisi */
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: #9CA3AF; /* gray-400 - subtil mais lisible */
+  opacity: 1;
+}
+
+/* Texte utilisateur plus contrasté que placeholder */
+input,
+textarea,
+select {
+  color: #111827; /* gray-900 - contraste maximal pour texte saisi */
+}
+
+input:focus::placeholder,
+textarea:focus::placeholder {
+  color: #D1D5DB; /* gray-300 - encore plus subtil au focus */
+}

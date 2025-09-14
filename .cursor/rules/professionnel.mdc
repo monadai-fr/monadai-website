@@ -1,0 +1,47 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Cursor Rules pour Projet MonadAI - Site Vitrine Next.js 14
+# Version: 1.0 | Applicable: Tout codebase | Modèle: Claude 4 Sonnet (Max Mode si >500k tokens)
+# Objectif: Générer code pro, DRY, performant pour site B2B web/IA. Évite abus IA: Pas de code inutile/redondant.
+
+## RÈGLES GÉNÉRALES
+- **DRY Principle**: Ne répète JAMAIS code. Utilise components réutilisables (e.g., <Button variant="primary" /> pour tous CTAs), hooks custom (e.g., useInView pour animations), utils (lib/utils.ts pour helpers communs). Si pattern répété, extrais en composant/hook. Vérifie toujours: "Est-ce dupliqué ailleurs ? Refactor si oui."
+- **Génération Minimale**: Génère SEULEMENT code demandé/pertinent. Pas de boilerplate extra (e.g., no imports inutiles, no exemples fictifs hors contexte). Si complétion, complète sans ajouter features non-spécifiées. Priorise: Fonctionnalité > Verbose. Si doute, propose alternative DRY au lieu de régénérer.
+- **Qualité Pro**: Code lisible, modulaire, scalable. Comments: Minimaux (seulement pour logique complexe, en FR/EN mix si besoin). Error handling: Basique (try/catch pour async, fallbacks UI). Pas d'abus: No console.logs excessifs ; supprime après debug.
+
+## GUIDELINES NEXT.JS 14 / TYPESCRIPT
+- **App Router**: Utilise app/ pour routing (e.g., app/services/page.tsx). Layouts imbriqués pour shared UI (e.g., root layout pour Navbar/Metadata).
+- **TypeScript Strict**: Active "strict": true dans tsconfig.json. Interfaces/Types pour TOUS props/fns (e.g., export interface HeroProps { title: string; }). No any ; utilise generics si besoin (e.g., <T> pour utils).
+- **Naming Conventions**: 
+  - Fichiers: kebab-case (e.g., devis-modal.tsx).
+  - Components: PascalCase (e.g., DevisModal).
+  - Vars/Fns: camelCase (e.g., calculateTotal).
+  - Constants: UPPER_SNAKE_CASE (e.g., COLORS.GREEN_SAPIN = '#1B4332').
+- **Architecture**: 
+  - Dossiers: app/ (pages), components/ (UI réutilisables: Hero, Card, Modal), lib/ (config: supabase.ts, utils.ts), hooks/ (custom: useDevisCalculator.ts, useAnimations.ts), public/ (logo/images optimized).
+  - Évite: Pas de pages/ (legacy) ; pas de styles globaux excessifs (utilise Tailwind classes).
+
+## STANDARDS DESIGN TAILWINDCSS
+- **Mobile-First Responsive**: Base sur sm/md/lg (e.g., class="text-base md:text-xl"). Test: Vérifie breakpoints (Tailwind default).
+- **Design System**: Couleurs vars CSS (e.g., --green-sapin: #1B4332;). Classes cohérentes: e.g., .btn-primary { @apply bg-green-sapin text-white px-6 py-3 rounded-md; }. Géométrique Swiss: Espacements multiples de 4 (p-4, m-8), borders nets, no shadows flashy.
+- **Animations Framer Motion**: Subtiles seulement. Variants DRY (e.g., export const fadeIn = { initial: { opacity: 0 }, animate: { opacity: 1 } };). Utilise <motion.div> avec transition={duration: 0.5, ease: "easeOut"}. Triggers: useInView pour scroll (import { useInView } from 'framer-motion'). Limite: 3-4 types (fade, slide, scale) ; pas d'overload (perf impact <5%).
+
+## OPTIMISATIONS PERFORMANCE AUTOMATIQUES
+- **Bundle/Perf**: Utilise dynamic imports pour heavy components (e.g., const DevisModal = dynamic(() => import('./DevisModal'), { ssr: false });). Next/Image pour toutes images (sizes, fill, priority hero). Vérifie: Ajoute @next/bundle-analyzer si besoin ; cible bundle <100kb gzipped, LWT<2s.
+- **Core Web Vitals**: Lazy loading sections (Suspense). No blocking renders. Test: Intègre Lighthouse checks dans prompts (e.g., "Génère et vérifie score >90").
+- **SEO On-Page**: Metadata export par page (e.g., export const metadata = { title: 'Services MonadAI', description: 'Développement web IA France' };). Keywords: "agence web IA", "transformation digitale PME". Génère next-sitemap auto (npm i next-sitemap).
+
+## INTÉGRATIONS VERCEL/SUPABASE
+- **Vercel**: Déploiement auto GitHub. Analytics: Utilise vercel/analytics built-in (wrap <Analytics /> dans layout). Domaine: Note pour DNS OVH (A record @ vers Vercel IP).
+- **Supabase**: Client init (lib/supabase.ts: createClient). Pour formulaire: POST à edge function (stocker table 'contacts' + email notify via Resend plus tard). Auth: Pas pour MVP. Évite code DB si non initialisé – stub avec console.log.
+
+## AUTRES CONVENTIONS
+- **Accessibilité/Sécurité**:ARIA pour interactive(e.g., aria-label sur buttons). Sanitize form inputs (e.g., via validator lib si besoin, mais minimal). Keyboard: Focus visibles sur anims.
+- **Langue/Contenu**: Tout UI/text en FRANÇAIS. Contenu: Pro sans jargon ; itère avec user (e.g., bio Raphael).
+- **Évite Problèmes IA**: Si génération trop verbose, refactor DRY. Pour tâches longues: Utilise background agents Cursor. Toujours: "Code généré est-il pro, DRY, utile ? Sinon, ajuste."
+- **Itérations**: Propose commits GitHub après milestones (e.g., "Commit: feat/hero-animé").
+
+Applique ces rules à CHAQUE interaction. Si conflit, priorise DRY/perf/SEO.
