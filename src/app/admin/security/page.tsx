@@ -126,7 +126,6 @@ export default function AdminSecurity() {
           <StatCard
             title="Rate Limit Hits"
             value={rateLimitHits}
-            change={{ value: -12, period: 'vs hier' }}
             color="amber"
             icon={
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +139,6 @@ export default function AdminSecurity() {
           <StatCard
             title="Spam Bloqué"
             value={spamBlocked}
-            change={{ value: 25, period: 'vs hier' }}
             color="red"
             icon={
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,7 +152,6 @@ export default function AdminSecurity() {
           <StatCard
             title="Bots Détectés"
             value={botsDetected}
-            change={{ value: 8, period: 'vs hier' }}
             color="blue"
             icon={
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

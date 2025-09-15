@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useRealAnalytics } from './use-real-analytics'
 
 /**
  * Hook Admin Data - Business Intelligence MonadAI
@@ -43,6 +44,9 @@ export function useAdminData() {
   const [securityMetrics, setSecurityMetrics] = useState<SecurityMetrics | null>(null)
   const [leads, setLeads] = useState<LeadData[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Hook analytics réelles (GA4 + GTM)
+  const { analyticsData: realAnalytics } = useRealAnalytics()
 
   // Calcul lead scoring automatique
   const calculateLeadScore = (lead: any): number => {
@@ -105,20 +109,25 @@ export function useAdminData() {
         return total + (budgetValues[contact.budget as keyof typeof budgetValues] || 0)
       }, 0) || 0
 
+      // Intégration données GA4 + GTM réelles
+      const visitorsCount = realAnalytics?.visitors24h || 0
+      const devisCount = realAnalytics?.devisSimulated || 0
+      const contactsCount = contacts24h?.length || 0
+      
       setBusinessMetrics({
-        visitors24h: 0, // À connecter avec GA4 API
-        devisSimulated: 0, // À connecter avec GTM dataLayer
-        contactsSubmitted: contacts24h?.length || 0,
-        conversionRate: 0, // Calculé quand données GA4 disponibles
+        visitors24h: visitorsCount,
+        devisSimulated: devisCount,
+        contactsSubmitted: contactsCount,
+        conversionRate: visitorsCount > 0 ? (contactsCount / visitorsCount) * 100 : 0,
         pipelineValue,
-        avgTicket: contacts24h?.length ? pipelineValue / contacts24h.length : 0
+        avgTicket: contactsCount > 0 ? pipelineValue / contactsCount : 0
       })
     } catch (error) {
       console.error('Erreur fetch business metrics:', error)
-      // Fallback avec données vides
+      // Fallback avec données analytics si disponibles
       setBusinessMetrics({
-        visitors24h: 0,
-        devisSimulated: 0,
+        visitors24h: realAnalytics?.visitors24h || 0,
+        devisSimulated: realAnalytics?.devisSimulated || 0,
         contactsSubmitted: 0,
         conversionRate: 0,
         pipelineValue: 0,

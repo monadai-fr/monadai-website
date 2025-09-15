@@ -57,7 +57,6 @@ export default function AdminDashboard() {
           <StatCard
             title="Visiteurs 24h"
             value={businessMetrics?.visitors24h || 0}
-            change={{ value: 23, period: 'vs hier' }}
             color="blue"
             icon={
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,7 +71,6 @@ export default function AdminDashboard() {
           <StatCard
             title="Devis Simulés"
             value={businessMetrics?.devisSimulated || 0}
-            change={{ value: 15, period: 'vs hier' }}
             color="green"
             icon={
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,7 +84,6 @@ export default function AdminDashboard() {
           <StatCard
             title="Contacts Soumis"
             value={businessMetrics?.contactsSubmitted || 0}
-            change={{ value: 8, period: 'vs hier' }}
             color="green"
             icon={
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +97,6 @@ export default function AdminDashboard() {
           <StatCard
             title="Pipeline Valeur"
             value={formatPrice(businessMetrics?.pipelineValue || 0)}
-            change={{ value: 28, period: 'vs semaine' }}
             color="green"
             icon={
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -328,25 +324,28 @@ export default function AdminDashboard() {
           
           <div className="space-y-4">
             {[
-              { service: 'Développement Web', percentage: 60, count: leads.filter(l => l.service === 'web').length },
-              { service: 'Automatisation IA', percentage: 25, count: leads.filter(l => l.service === 'ia').length },
-              { service: 'Transformation', percentage: 15, count: leads.filter(l => l.service === 'transformation').length }
-            ].map((item) => (
-              <div key={item.service}>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm text-gray-600">{item.service}</span>
-                  <span className="text-sm font-medium text-gray-900">{item.count} leads</span>
+              { service: 'Développement Web', count: leads.filter(l => l.service === 'web').length },
+              { service: 'Automatisation IA', count: leads.filter(l => l.service === 'ia').length },
+              { service: 'Transformation', count: leads.filter(l => l.service === 'transformation').length }
+            ].map((item) => {
+              const percentage = leads.length > 0 ? Math.round((item.count / leads.length) * 100) : 0
+              return (
+                <div key={item.service}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm text-gray-600">{item.service}</span>
+                    <span className="text-sm font-medium text-gray-900">{item.count} leads</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <motion.div 
+                      className="bg-green-sapin h-2 rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${percentage}%` }}
+                      transition={{ duration: 1, delay: 0.8 }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <motion.div 
-                    className="bg-green-sapin h-2 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${item.percentage}%` }}
-                    transition={{ duration: 1, delay: 0.8 }}
-                  />
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </motion.div>
       </div>

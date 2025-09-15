@@ -36,7 +36,7 @@ alwaysApply: true
 
 ## INTÉGRATIONS VERCEL/SUPABASE
 - **Vercel**: Déploiement auto GitHub. Analytics: Utilise vercel/analytics built-in (wrap <Analytics /> dans layout). Domaine: Note pour DNS OVH (A record @ vers Vercel IP).
-- **Supabase**: Client init (lib/supabase.ts: createClient). Pour formulaire: POST à edge function (stocker table 'contacts' + email notify via Resend plus tard). Auth: Pas pour MVP. Évite code DB si non initialisé – stub avec console.log.
+- **Supabase**: Client init (lib/supabase.ts: createClient). Pour formulaire: POST à edge function (stocker table 'contacts' + email notify via Resend plus tard).
 
 ## AUTRES CONVENTIONS
 - **Accessibilité/Sécurité**:ARIA pour interactive(e.g., aria-label sur buttons). Sanitize form inputs (e.g., via validator lib si besoin, mais minimal). Keyboard: Focus visibles sur anims.

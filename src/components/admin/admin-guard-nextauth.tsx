@@ -118,31 +118,8 @@ export default function AdminGuardNextAuth({ children }: AdminGuardProps) {
 
   // ✅ Authentifié ET autorisé - afficher dashboard
   return (
-    <div className="relative">
-      {/* Header admin avec profile + logout */}
-      <div className="absolute top-4 right-4 z-50">
-        <div className="flex items-center space-x-3 bg-white rounded-lg border border-gray-200 p-2 shadow-sm">
-          <div className="flex items-center text-sm text-gray-600">
-            <img 
-              src={session.user?.image || ''} 
-              alt="Profile Admin"
-              className="w-6 h-6 rounded-full mr-2 border border-gray-200"
-            />
-            <span className="hidden sm:block">{session.user?.name}</span>
-          </div>
-          <motion.button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            title="Déconnexion sécurisée"
-          >
-            Logout
-          </motion.button>
-        </div>
-      </div>
-      
+    <>
       {children}
-    </div>
+    </>
   )
 }

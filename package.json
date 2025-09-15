@@ -17,6 +17,8 @@
     "@supabase/supabase-js": "^2.57.4",
     "@vercel/analytics": "^1.5.0",
     "framer-motion": "^12.23.12",
+    "google-auth-library": "^10.3.0",
+    "googleapis": "^159.0.0",
     "next": "15.5.2",
     "next-auth": "^4.24.11",
     "next-sitemap": "^4.2.3",

@@ -1,8 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useSession, signOut } from 'next-auth/react'
 
 export default function AdminHeader() {
+  const { data: session } = useSession()
   const currentTime = new Date().toLocaleString('fr-FR', {
     weekday: 'long',
     year: 'numeric', 
@@ -31,7 +33,7 @@ export default function AdminHeader() {
           </motion.div>
 
           {/* Quick Stats */}
-          <div className="hidden md:flex items-center space-x-4 text-sm text-gray-600">
+          <div className="hidden lg:flex items-center space-x-4 text-sm text-gray-600">
             <div className="flex items-center">
               <svg className="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -46,6 +48,29 @@ export default function AdminHeader() {
               <span>Optimisé</span>
             </div>
           </div>
+
+          {/* User Profile & Logout */}
+          {session && (
+            <div className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
+              <div className="flex items-center text-sm text-gray-600">
+                <img 
+                  src={session.user?.image || ''} 
+                  alt="Profile Admin"
+                  className="w-6 h-6 rounded-full mr-2 border border-gray-200"
+                />
+                <span className="hidden sm:block">{session.user?.name?.split(' ')[0]}</span>
+              </div>
+              <motion.button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                title="Déconnexion sécurisée"
+              >
+                Logout
+              </motion.button>
+            </div>
+          )}
         </div>
       </div>
     </header>
