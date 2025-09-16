@@ -6,7 +6,7 @@ import { google } from 'googleapis'
  * Connexion Google Analytics 4 pour dashboard admin
  */
 
-const GA4_PROPERTY_ID = process.env.GA4_PROPERTY_ID || '121487971133'
+const GA4_PROPERTY_ID = process.env.GA4_PROPERTY_ID || '12148797133'
 
 // Configuration auth Google Analytics
 const getGA4Client = () => {

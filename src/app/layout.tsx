@@ -7,6 +7,7 @@ import Footer from "@/components/footer";
 import SchemaOrg from "@/components/schema-org";
 import PerformanceInit from "@/components/performance-init";
 import GTM, { GTMNoscript } from "@/components/gtm";
+import GA4Script from "@/components/ga4-script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -96,6 +97,7 @@ export default function RootLayout({
       <head>
         <SchemaOrg />
         <GTM gtmId="GTM-KQ7X36DP" />
+        <GA4Script measurementId="G-9697XDEM67" />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <GTMNoscript gtmId="GTM-KQ7X36DP" />

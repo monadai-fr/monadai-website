@@ -51,7 +51,7 @@ export default function AdminHeader() {
 
           {/* User Profile & Logout */}
           {session && (
-            <div className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
+            <div className="flex items-center space-x-3 bg-gray-50 border border-gray-200 rounded-lg p-2">
               <div className="flex items-center text-sm text-gray-600">
                 <img 
                   src={session.user?.image || ''} 
