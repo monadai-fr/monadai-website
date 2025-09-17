@@ -106,7 +106,7 @@ export default function AdminContent() {
                 >
                   <h5 className="font-medium text-gray-900 mb-2">Stack Technique</h5>
                   <div className="flex flex-wrap gap-1">
-                    {project.tech.map((tech) => (
+                    {project.tech.map((tech: string) => (
                       <span key={tech} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
                         {tech}
                       </span>
@@ -147,39 +147,42 @@ export default function AdminContent() {
         <h3 className="font-semibold text-gray-900 mb-6">FAQ Performance Analytics</h3>
         
         {faqStats.length > 0 ? (
-          <div className="space-y-4">
-            {faqStats.map((faq, index) => (
-            <div key={faq.question} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">{faq.question}</p>
-                <p className="text-sm text-gray-600">Section: {faq.section}</p>
-              </div>
-              
-              <div className="text-right">
-                <p className="font-bold text-green-600">{faq.opens}</p>
-                <p className="text-xs text-gray-500">ouvertures</p>
-              </div>
-              
-              <div className="ml-4 w-20 bg-gray-200 rounded-full h-2">
-                <motion.div 
-                  className="bg-green-sapin h-2 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min((faq.opens / Math.max(...faqStats.map(f => f.opens))) * 100, 100)}%` }}
-                  transition={{ duration: 0.8, delay: index * 0.1 }}
-                />
-              </div>
+          <>
+            <div className="space-y-4">
+            {faqStats.map((faq: any, index: number) => (
+              <div key={faq.question} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900">{faq.question}</p>
+                  <p className="text-sm text-gray-600">Section: {faq.section}</p>
+                </div>
+                
+                <div className="text-right">
+                  <p className="font-bold text-green-600">{faq.opens}</p>
+                  <p className="text-xs text-gray-500">ouvertures</p>
+                </div>
+                
+                <div className="ml-4 w-20 bg-gray-200 rounded-full h-2">
+                  <motion.div 
+                    className="bg-green-sapin h-2 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min((faq.opens / Math.max(...faqStats.map((f: any) => f.opens))) * 100, 100)}%` }}
+                    transition={{ duration: 0.8, delay: index * 0.1 }}
+                  />
+                </div>
               </div>
             ))}
           </div>
           
+          
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
             <h4 className="font-medium text-green-900 mb-2">💡 Content Insights Auto-générés</h4>
             <ul className="text-sm text-green-800 space-y-1">
-              <li>• FAQ la plus populaire : {faqStats.reduce((prev, current) => (prev.opens > current.opens) ? prev : current).question}</li>
-              <li>• Total ouvertures FAQ : {faqStats.reduce((sum, faq) => sum + faq.opens, 0)} cette période</li>
-              <li>• Engagement moyen : {Math.round(faqStats.reduce((sum, faq) => sum + faq.opens, 0) / faqStats.length)} ouv./question</li>
+              <li>• FAQ la plus populaire : {faqStats.reduce((prev: any, current: any) => (prev.opens > current.opens) ? prev : current).question}</li>
+              <li>• Total ouvertures FAQ : {faqStats.reduce((sum: number, faq: any) => sum + faq.opens, 0)} cette période</li>
+              <li>• Engagement moyen : {Math.round(faqStats.reduce((sum: number, faq: any) => sum + faq.opens, 0) / faqStats.length)} ouv./question</li>
             </ul>
-          </div>
+            </div>
+          </>
         ) : (
           <div className="text-center py-12">
             <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
