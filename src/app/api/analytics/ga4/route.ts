@@ -101,6 +101,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: false,
       message: 'Erreur récupération données GA4',
+      error: error instanceof Error ? error.message : 'Erreur inconnue',
+      debug: {
+        hasApiKey: !!process.env.GA4_API_KEY,
+        propertyId: GA4_PROPERTY_ID,
+        apiKeyStart: process.env.GA4_API_KEY?.substring(0, 10) + '...'
+      },
       data: {
         visitors24h: 0,
         sessionsToday: 0,
