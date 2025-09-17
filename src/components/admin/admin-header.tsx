@@ -101,7 +101,7 @@ export default function AdminHeader() {
             </motion.button>
 
             {/* Security Alert */}
-            {securityMetrics?.threatLevel !== 'low' && (
+            {securityMetrics?.threatLevel && securityMetrics.threatLevel !== 'low' && (
               <motion.div
                 className="flex items-center bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"
                 whileHover={{ scale: 1.02 }}
