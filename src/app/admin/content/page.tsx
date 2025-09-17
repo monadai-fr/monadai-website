@@ -4,54 +4,16 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { staggerContainer, staggerItem } from '@/lib/motion-variants'
 
-// Projets SaaS - Données dynamiques depuis portfolio
-const projectsData = [
-  {
-    id: 'zentra-flux',
-    name: 'Zentra Flux',
-    description: 'SaaS opérationnel - Données temps réel avec alertes IA',
-    status: 'En développement',
-    progress: Math.floor(Date.now() / 1000000000) % 100, // Progress dynamique basé sur timestamp
-    target: 'PME',
-    tech: ['Next.js', 'Supabase', 'IA Analytics'],
-    interest: Math.floor(Math.random() * 10) + 15, // Intérêt variable 15-25
-    mvpTarget: 'Q2 2025'
-  },
-  {
-    id: 'clara-node',
-    name: 'Clara Node', 
-    description: 'SaaS collaboratif - Dashboard équipe avec IA priorisation',
-    status: 'Conception',
-    progress: Math.floor(Date.now() / 1000000000 * 0.7) % 100,
-    target: 'Startups',
-    tech: ['Next.js', 'Supabase', 'Algorithmes IA'],
-    interest: Math.floor(Math.random() * 8) + 12,
-    mvpTarget: 'Q3 2025'
-  },
-  {
-    id: 'vora-pulse',
-    name: 'Vora Pulse',
-    description: 'Automatisation IA - Workflows clients sécurisés',
-    status: 'Planification', 
-    progress: Math.floor(Date.now() / 1000000000 * 0.3) % 100,
-    target: 'Agences',
-    tech: ['Next.js', 'Supabase', 'APIs IA'],
-    interest: Math.floor(Math.random() * 6) + 8,
-    mvpTarget: 'Q4 2025'
-  }
-]
+// Projets SaaS - Section désactivée en attente de vraies données
+// TODO: Connecter à table Supabase 'projects' quand elle existera
+const projectsData: any[] = []
 
 export default function AdminContent() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
   
-  // FAQ stats dynamiques - Connexion future GTM analytics
-  const faqStats = [
-    { question: 'Pourquoi MonadAI ?', opens: Math.floor(Math.random() * 15) + 5, section: 'homepage' },
-    { question: 'Quels sont vos tarifs ?', opens: Math.floor(Math.random() * 25) + 10, section: 'services' },
-    { question: 'Délais réalisation ?', opens: Math.floor(Math.random() * 20) + 8, section: 'services' },
-    { question: 'Comment ça se déroule ?', opens: Math.floor(Math.random() * 18) + 6, section: 'services' },
-    { question: 'Projets SaaS disponibles ?', opens: Math.floor(Math.random() * 12) + 3, section: 'services' }
-  ]
+  // FAQ stats - En attente connexion GTM analytics réelle  
+  // TODO: Remplacer par vraies données GTM quand webhook configuré
+  const faqStats: any[] = []
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -80,8 +42,9 @@ export default function AdminContent() {
           Projets SaaS Portfolio
         </motion.h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {projectsData.map((project) => (
+        {projectsData.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {projectsData.map((project) => (
             <motion.div
               key={project.id}
               variants={staggerItem}
@@ -159,9 +122,19 @@ export default function AdminContent() {
                   </motion.button>
                 </motion.div>
               )}
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Projets SaaS</h3>
+            <p className="text-gray-600 mb-4">Les données projets seront disponibles après création de la table Supabase.</p>
+            <p className="text-sm text-gray-500">En attente de connexion données réelles.</p>
+          </div>
+        )}
       </motion.div>
 
       {/* FAQ Analytics */}
@@ -173,8 +146,9 @@ export default function AdminContent() {
       >
         <h3 className="font-semibold text-gray-900 mb-6">FAQ Performance Analytics</h3>
         
-        <div className="space-y-4">
-          {faqStats.map((faq, index) => (
+        {faqStats.length > 0 ? (
+          <div className="space-y-4">
+            {faqStats.map((faq, index) => (
             <div key={faq.question} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div className="flex-1">
                 <p className="font-medium text-gray-900">{faq.question}</p>
@@ -194,19 +168,28 @@ export default function AdminContent() {
                   transition={{ duration: 0.8, delay: index * 0.1 }}
                 />
               </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <h4 className="font-medium text-green-900 mb-2">💡 Content Insights Auto-générés</h4>
-          <ul className="text-sm text-green-800 space-y-1">
-            <li>• FAQ la plus populaire : {faqStats.reduce((prev, current) => (prev.opens > current.opens) ? prev : current).question}</li>
-            <li>• Total ouvertures FAQ : {faqStats.reduce((sum, faq) => sum + faq.opens, 0)} cette période</li>
-            <li>• Engagement moyen : {Math.round(faqStats.reduce((sum, faq) => sum + faq.opens, 0) / faqStats.length)} ouv./question</li>
-            <li>• Projets en cours : {projectsData.filter(p => p.status === 'En développement').length}/{projectsData.length} actifs</li>
-          </ul>
-        </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h4 className="font-medium text-green-900 mb-2">💡 Content Insights Auto-générés</h4>
+            <ul className="text-sm text-green-800 space-y-1">
+              <li>• FAQ la plus populaire : {faqStats.reduce((prev, current) => (prev.opens > current.opens) ? prev : current).question}</li>
+              <li>• Total ouvertures FAQ : {faqStats.reduce((sum, faq) => sum + faq.opens, 0)} cette période</li>
+              <li>• Engagement moyen : {Math.round(faqStats.reduce((sum, faq) => sum + faq.opens, 0) / faqStats.length)} ouv./question</li>
+            </ul>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">FAQ Analytics</h3>
+            <p className="text-gray-600 mb-4">Les statistiques FAQ seront disponibles après connexion GTM analytics.</p>
+            <p className="text-sm text-gray-500">En attente de webhook GTM configuré.</p>
+          </div>
+        )}
       </motion.div>
     </div>
   )

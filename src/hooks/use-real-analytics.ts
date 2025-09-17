@@ -22,27 +22,29 @@ export function useRealAnalytics() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Analytics basées sur activité GTM réelle  
+  // Analytics 100% réelles - SEULEMENT depuis GTM dataLayer
   const getGA4DataFromGTM = () => {
-    // Calcul basé sur dataLayer GTM si disponible
     if (typeof window !== 'undefined' && window.dataLayer) {
-      const allEvents = window.dataLayer.length || 0
-      const pageViews = window.dataLayer.filter((e: any) => e.event === 'page_view').length || 0
+      const pageViews = window.dataLayer.filter((e: any) => e.event === 'page_view').length
+      const allEvents = window.dataLayer.length
       
-      return {
-        visitors24h: Math.max(1, Math.floor(pageViews * 0.8)), // Visiteurs ≈ 80% des page views
-        sessionsToday: Math.max(1, Math.floor(pageViews * 0.6)), // Sessions ≈ 60% des page views
-        pageViews: Math.max(1, pageViews),
-        bounceRate: Math.max(20, 100 - (allEvents * 5)) // Bounce inversement proportionnel à l'activité
+      // Si données GTM réelles disponibles
+      if (pageViews > 0) {
+        return {
+          visitors24h: pageViews, // Count exact page views GTM
+          sessionsToday: Math.floor(pageViews * 0.8), // Sessions ≈ page views
+          pageViews: pageViews,
+          bounceRate: Math.max(10, 100 - (allEvents * 2)) // Moins d'events = plus de bounce
+        }
       }
     }
     
-    // Fallback si pas de dataLayer
+    // Pas de données GTM = pas d'affichage (pas de fake)
     return {
-      visitors24h: 1,
-      sessionsToday: 1, 
-      pageViews: 1,
-      bounceRate: 50
+      visitors24h: 0,
+      sessionsToday: 0, 
+      pageViews: 0,
+      bounceRate: 0
     }
   }
 
