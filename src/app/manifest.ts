@@ -15,15 +15,15 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ['business', 'productivity', 'technology'],
     icons: [
       {
-        src: '/favicon-192.png',
+        src: '/favicon-192.webp',
         sizes: '192x192',
-        type: 'image/png',
+        type: 'image/webp',
         purpose: 'maskable',
       },
       {
-        src: '/favicon-512.png', 
+        src: '/favicon-512.webp', 
         sizes: '512x512',
-        type: 'image/png',
+        type: 'image/webp',
         purpose: 'maskable',
       },
     ],
