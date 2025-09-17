@@ -13,9 +13,12 @@ export default function AdminAnalytics() {
   const totalContacts = businessMetrics?.contactsSubmitted || 0
   const totalDevis = businessMetrics?.devisSimulated || 0
   
+  // Calcul engagement basé sur vraies métriques (plus de hardcode 0.65)
+  const estimatedEngagement = Math.max(totalDevis, totalContacts) // Engagement = max(devis, contacts)
+  
   const funnelData = [
     { step: 'Visiteurs Homepage', count: totalVisitors, percentage: totalVisitors > 0 ? 100 : 0 },
-    { step: 'Engagement Pages', count: totalVisitors > 0 ? Math.round(totalVisitors * 0.65) : 0, percentage: totalVisitors > 0 ? 65 : 0 },
+    { step: 'Engagement Pages', count: estimatedEngagement, percentage: totalVisitors > 0 ? Math.round((estimatedEngagement / totalVisitors) * 100) : 0 },
     { step: 'Devis Simulés', count: totalDevis, percentage: totalVisitors > 0 ? Math.round((totalDevis / totalVisitors) * 100) : 0 },
     { step: 'Contacts Soumis', count: totalContacts, percentage: totalVisitors > 0 ? Math.round((totalContacts / totalVisitors) * 100) : 0 }
   ]
@@ -162,11 +165,11 @@ export default function AdminAnalytics() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium text-green-900">Objectif Mensuel</p>
-                  <p className="text-sm text-green-700">10 contacts qualifiés</p>
+                  <p className="text-sm text-green-700">{Math.max(5, (businessMetrics?.contactsSubmitted || 0) * 2)} contacts qualifiés</p>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-green-600">
-                    {Math.round(((businessMetrics?.contactsSubmitted || 0) / 10) * 100)}%
+                    {Math.round(((businessMetrics?.contactsSubmitted || 0) / Math.max(5, (businessMetrics?.contactsSubmitted || 0) * 2)) * 100)}%
                   </p>
                   <p className="text-xs text-green-600">réalisé</p>
                 </div>
@@ -184,7 +187,7 @@ export default function AdminAnalytics() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Projection 30j</span>
                 <span className="font-bold text-green-600">
-                  {formatPrice((businessMetrics?.pipelineValue || 0) * 4.3)}
+                  {formatPrice((businessMetrics?.pipelineValue || 0) * Math.max(1, (businessMetrics?.contactsSubmitted || 0)))}
                 </span>
               </div>
               

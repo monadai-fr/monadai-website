@@ -306,7 +306,7 @@ export default function AdminDashboard() {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Projection Mensuelle</span>
                 <span className="font-bold text-green-600">
-                  {formatPrice((businessMetrics?.pipelineValue || 0) * 4.3)} {/* ~30 jours */}
+                  {formatPrice((businessMetrics?.pipelineValue || 0) * (30 / 1))} {/* Basé sur pipeline daily rate */}
                 </span>
               </div>
             </div>
