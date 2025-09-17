@@ -25,11 +25,13 @@ const getGA4Client = () => {
 
 export async function GET(request: NextRequest) {
   try {
-    // Vérification variables d'environnement
-    if (!process.env.GOOGLE_ANALYTICS_CLIENT_EMAIL || !process.env.GOOGLE_ANALYTICS_PRIVATE_KEY) {
+    // Mode API Key (plus simple que Service Account)
+    const GA4_API_KEY = process.env.GA4_API_KEY
+    
+    if (!GA4_API_KEY) {
       return NextResponse.json({
         success: false,
-        message: 'Credentials GA4 non configurés',
+        message: 'GA4_API_KEY non configurée',
         data: {
           visitors24h: 0,
           sessionsToday: 0,
@@ -39,31 +41,40 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const analyticsdata = getGA4Client()
+    // Requête directe GA4 avec API Key
+    const response = await fetch(
+      `https://analyticsdata.googleapis.com/v1beta/properties/${GA4_PROPERTY_ID}:runReport?key=${GA4_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dateRanges: [
+            {
+              startDate: '1daysAgo',
+              endDate: 'today',
+            },
+          ],
+          metrics: [
+            { name: 'activeUsers' },
+            { name: 'sessions' },
+            { name: 'screenPageViews' },
+            { name: 'bounceRate' },
+          ],
+          dimensions: [
+            { name: 'date' }
+          ],
+        }),
+      }
+    )
 
-    // Requête GA4 : Visiteurs dernières 24h
-    const response = await analyticsdata.properties.runReport({
-      property: `properties/${GA4_PROPERTY_ID}`,
-      requestBody: {
-        dateRanges: [
-          {
-            startDate: '1daysAgo',
-            endDate: 'today',
-          },
-        ],
-        metrics: [
-          { name: 'activeUsers' },        // Visiteurs uniques 24h
-          { name: 'sessions' },           // Sessions 24h  
-          { name: 'screenPageViews' },    // Pages vues
-          { name: 'bounceRate' },         // Taux rebond
-        ],
-        dimensions: [
-          { name: 'date' }
-        ],
-      },
-    })
+    if (!response.ok) {
+      throw new Error(`GA4 API Error: ${response.status}`)
+    }
 
-    const rows = response.data.rows || []
+    const result = await response.json()
+    const rows = result.rows || []
     
     // Extraction données pour dashboard
     const metrics = rows.length > 0 ? {
