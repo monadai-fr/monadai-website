@@ -123,9 +123,12 @@ export default function AdminHeader() {
             <div className="flex items-center space-x-3 bg-gray-50 border border-gray-200 rounded-lg p-2">
               <div className="flex items-center">
                 <img 
-                  src={session.user?.image || ''} 
-                  alt="Profile Admin"
-                  className="w-8 h-8 rounded-full mr-3 border-2 border-gray-300"
+                  src={session.user?.image || '/favicon-192.webp'} 
+                  alt="Profile Admin MonadAI"
+                  className="w-8 h-8 rounded-full mr-3 border-2 border-green-sapin"
+                  onError={(e) => {
+                    e.currentTarget.src = '/favicon-192.webp'
+                  }}
                 />
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium text-gray-900">{session.user?.name?.split(' ')[0]}</p>
