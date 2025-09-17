@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AdminSidebar from "@/components/admin/admin-sidebar";
 import AdminHeader from "@/components/admin/admin-header";
+import AdminFooter from "@/components/admin/admin-footer";
 import AdminGuardNextAuth from "@/components/admin/admin-guard-nextauth";
 import AdminProviders from "@/components/admin/admin-providers";
 
@@ -28,6 +29,7 @@ export default function AdminLayout({
             <main className="flex-1 p-6">
               {children}
             </main>
+            <AdminFooter />
           </div>
         </div>
       </AdminGuardNextAuth>
