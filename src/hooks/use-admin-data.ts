@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useRealAnalytics } from './use-real-analytics'
 
 /**
  * Hook Admin Data - Business Intelligence MonadAI
- * Centralise toutes les métriques admin (principe DRY)
+ * NETTOYÉ - Logique simple contacts/leads seulement
  */
 
 export interface BusinessMetrics {
@@ -45,8 +44,6 @@ export function useAdminData() {
   const [leads, setLeads] = useState<LeadData[]>([])
   const [loading, setLoading] = useState(true)
   
-  // Hook analytics réelles (GA4 + GTM) - SIMPLE
-  const { analyticsData: realAnalytics } = useRealAnalytics()
   const initRef = useRef(false)
 
   // Calcul lead scoring automatique
@@ -122,25 +119,23 @@ export function useAdminData() {
         return total + (budgetValues[contact.budget as keyof typeof budgetValues] || 0)
       }, 0) || 0
 
-      // Intégration données GA4 + GTM réelles
-      const visitorsCount = realAnalytics?.visitors24h || 0
-      const devisCount = realAnalytics?.devisSimulated || 0
+      // Métriques basées contacts Supabase SEULEMENT
       const contactsCount = contactsToUse?.length || 0
       
       setBusinessMetrics({
-        visitors24h: visitorsCount,
-        devisSimulated: devisCount,
+        visitors24h: 0, // Placeholder - à définir alternative
+        devisSimulated: 0, // Placeholder - à définir alternative  
         contactsSubmitted: contactsCount,
-        conversionRate: visitorsCount > 0 ? (contactsCount / visitorsCount) * 100 : 0,
+        conversionRate: 0, // Placeholder - à calculer différemment
         pipelineValue,
         avgTicket: contactsCount > 0 ? pipelineValue / contactsCount : 0
       })
     } catch (error) {
       console.error('Erreur fetch business metrics:', error)
-      // Fallback avec données analytics si disponibles
+      // Fallback simple
       setBusinessMetrics({
-        visitors24h: realAnalytics?.visitors24h || 0,
-        devisSimulated: realAnalytics?.devisSimulated || 0,
+        visitors24h: 0,
+        devisSimulated: 0,
         contactsSubmitted: 0,
         conversionRate: 0,
         pipelineValue: 0,
@@ -245,22 +240,22 @@ export function useAdminData() {
     }
   }
 
-  // Init ONE TIME ONLY
+  // Init SIMPLE - Contacts et leads seulement
   useEffect(() => {
     if (!initRef.current && typeof window !== 'undefined') {
       initRef.current = true
-      console.log('🚀 Init dashboard data - ONE TIME')
+      console.log('🚀 Init admin data - contacts/leads seulement')
       refreshData()
       
-      // Auto-refresh simple toutes les 2 minutes
+      // Auto-refresh modéré pour contacts/leads
       const interval = setInterval(() => {
-        console.log('⏰ Auto-refresh dashboard')
+        console.log('⏰ Refresh contacts/leads')
         refreshData()
-      }, 120000) // 2 minutes moins agressif
+      }, 300000) // 5 minutes (contacts changent moins souvent)
       
       return () => clearInterval(interval)
     }
-  }, []) // AUCUNE DÉPENDANCE pour éviter loops
+  }, [])
 
   return {
     businessMetrics,
