@@ -10,13 +10,17 @@ import { staggerContainer, staggerItem } from '@/lib/motion-variants'
 export default function AdminDashboard() {
   const { businessMetrics, securityMetrics, leads, loading, refreshData } = useAdminData()
   
-  // Force refresh après hydratation côté client
+  // Force refresh après hydratation côté client (une seule fois)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       console.log('🔄 Force refresh après hydratation client')
-      setTimeout(refreshData, 1000) // Délai pour hydratation complète
+      const timer = setTimeout(() => {
+        refreshData()
+      }, 1500) // Délai pour hydratation complète
+      
+      return () => clearTimeout(timer)
     }
-  }, [])
+  }, [refreshData]) // refreshData comme dépendance pour éviter stale closure
 
   // Segmentation leads par score
   const hotLeads = leads.filter(lead => lead.score >= 70)

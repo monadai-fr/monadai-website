@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRealAnalytics } from './use-real-analytics'
 
@@ -45,8 +45,8 @@ export function useAdminData() {
   const [leads, setLeads] = useState<LeadData[]>([])
   const [loading, setLoading] = useState(true)
   
-  // Hook analytics réelles (GA4 + GTM)
-  const { analyticsData: realAnalytics } = useRealAnalytics()
+  // Hook analytics réelles (GA4 + GTM) avec réactivité
+  const { analyticsData: realAnalytics, refreshData: refreshAnalytics } = useRealAnalytics()
 
   // Calcul lead scoring automatique
   const calculateLeadScore = (lead: any): number => {
@@ -73,8 +73,8 @@ export function useAdminData() {
     return Math.min(score, 100)
   }
 
-  // Récupération données business
-  const fetchBusinessMetrics = async () => {
+  // Récupération données business (mémoïsée)
+  const fetchBusinessMetrics = useCallback(async () => {
     try {
       // Contacts dernières 24h avec fallback intelligent
       const { data: contacts24h, error: error24h } = await supabase
@@ -146,10 +146,10 @@ export function useAdminData() {
         avgTicket: 0
       })
     }
-  }
+  }, [realAnalytics]) // Dépendance realAnalytics pour recalcul auto
 
-  // Récupération données sécurité
-  const fetchSecurityMetrics = async () => {
+  // Récupération données sécurité (mémoïsée)
+  const fetchSecurityMetrics = useCallback(async () => {
     try {
       const { data: securityLogs, error } = await supabase
         .from('security_logs')
@@ -199,10 +199,10 @@ export function useAdminData() {
         suspiciousIPs: []
       })
     }
-  }
+  }, []) // Pas de dépendances - données statiques
 
-  // Récupération leads avec scoring
-  const fetchLeads = async () => {
+  // Récupération leads avec scoring (mémoïsée)  
+  const fetchLeads = useCallback(async () => {
     try {
       const { data: contacts, error } = await supabase
         .from('contacts')
@@ -226,10 +226,10 @@ export function useAdminData() {
       console.error('Erreur fetch leads:', error)
       setLeads([])
     }
-  }
+  }, []) // Pas de dépendances - calcul basé sur calculateLeadScore
 
-  // Refresh données
-  const refreshData = async () => {
+  // Refresh données (mémoïsée)
+  const refreshData = useCallback(async () => {
     setLoading(true)
     await Promise.all([
       fetchBusinessMetrics(),
@@ -237,18 +237,35 @@ export function useAdminData() {
       fetchLeads()
     ])
     setLoading(false)
-  }
+  }, [fetchBusinessMetrics, fetchSecurityMetrics, fetchLeads]) // Dépendances des fonctions fetch
+
+  // Réactivité analytics : quand realAnalytics change → refetch metrics
+  useEffect(() => {
+    if (realAnalytics) {
+      console.log('📊 Analytics mises à jour → Recalcul business metrics')
+      fetchBusinessMetrics()
+    }
+  }, [realAnalytics?.lastUpdated]) // Dépendance sur lastUpdated pour trigger refresh
 
   // Init + refresh auto (côté client seulement)
   useEffect(() => {
-    refreshData()
+    const initData = async () => {
+      console.log('🚀 Init dashboard data')
+      await refreshData()
+    }
     
-    // Refresh auto toutes les 30 secondes (côté client)
+    initData()
+    
+    // Auto-refresh coordonné avec analytics
     if (typeof window !== 'undefined') {
-      const interval = setInterval(refreshData, 30000)
+      const interval = setInterval(() => {
+        console.log('⏰ Auto-refresh dashboard complet')
+        refreshAnalytics() // Refresh analytics en premier
+        setTimeout(refreshData, 1000) // Puis business data 1s après
+      }, 60000) // 1 minute (moins agressif que 30s)
       return () => clearInterval(interval)
     }
-  }, [])
+  }, [refreshData, refreshAnalytics]) // Dépendances correctes
 
   return {
     businessMetrics,

@@ -100,7 +100,7 @@ export function useRealAnalytics() {
     }
   }
 
-  // Auto-refresh intelligent (côté client seulement)
+  // Auto-refresh intelligent avec callback pour synchronisation
   useEffect(() => {
     fetchRealAnalytics()
     
@@ -112,7 +112,7 @@ export function useRealAnalytics() {
       }, 30000) // 30 secondes pour dashboard réactif
       return () => clearInterval(interval)
     }
-  }, [])
+  }, []) // Pas de dépendances pour éviter loops
 
   return {
     analyticsData,

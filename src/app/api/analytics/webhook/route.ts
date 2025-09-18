@@ -24,6 +24,24 @@ export async function POST(request: NextRequest) {
     const cleanEventName = event_name && event_name !== 'undefined' ? event_name : 'page_view'
     
     const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+    const uniqueClientId = client_id || `session_${clientIP}_${Date.now()}`
+    
+    // 🛡️ DÉDUPLICATION : Éviter double-clicks sur events critiques
+    if (['devis_opened', 'contact_submitted', 'faq_opened'].includes(cleanEventName)) {
+      const recentEvent = await supabase
+        .from('analytics_events')
+        .select('*')
+        .eq('event_name', cleanEventName)
+        .eq('client_id', uniqueClientId)
+        .gte('created_at', new Date(Date.now() - 5000).toISOString()) // 5 secondes
+        .limit(1)
+        .single()
+        
+      if (recentEvent.data) {
+        console.log(`⚠️ Event ${cleanEventName} déjà enregistré pour ${uniqueClientId} dans les 5 dernières secondes`)
+        return NextResponse.json({ success: true, message: 'Event deduplicated' })
+      }
+    }
     let country = request.headers.get('CF-IPCountry') || null
     
     // Fallback IPinfo.io si pas Cloudflare
@@ -43,7 +61,7 @@ export async function POST(request: NextRequest) {
       .insert([{
         event_name: cleanEventName,
         page_url: page_location || '',
-        client_id: client_id || `session_${Date.now()}`,
+        client_id: uniqueClientId,
         event_data: event_data || {},
         user_agent: user_agent || '',
         ip_address: clientIP,
