@@ -22,65 +22,75 @@ export function useRealAnalytics() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Analytics 100% réelles - SEULEMENT depuis GTM dataLayer
-  const getGA4DataFromGTM = () => {
-    if (typeof window !== 'undefined' && window.dataLayer) {
-      const pageViews = window.dataLayer.filter((e: any) => e.event === 'page_view').length
-      const allEvents = window.dataLayer.length
-      
-      // Si données GTM réelles disponibles
-      if (pageViews > 0) {
+  // Analytics depuis Supabase (stockage GTM) - Dashboard serveur
+  const fetchAnalyticsFromSupabase = async () => {
+    try {
+      // Page views dernières 24h
+      const { data: pageViews, error: pvError } = await supabase
+        .from('analytics_events')
+        .select('*')
+        .eq('event_name', 'page_view')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+
+      // Events custom MonadAI
+      const { data: customEvents, error: ceError } = await supabase
+        .from('analytics_events')
+        .select('*')
+        .in('event_name', ['devis_opened', 'faq_opened', 'contact_submitted'])
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+
+      if (pvError || ceError) {
+        console.warn('Table analytics_events pas encore créée ou vide')
         return {
-          visitors24h: pageViews, // Count exact page views GTM
-          sessionsToday: Math.floor(pageViews * 0.8), // Sessions ≈ page views
-          pageViews: pageViews,
-          bounceRate: Math.max(10, 100 - (allEvents * 2)) // Moins d'events = plus de bounce
+          visitors24h: 0,
+          sessionsToday: 0,
+          pageViews: 0,
+          bounceRate: 0,
+          devisSimulated: 0,
+          faqOpened: 0
         }
       }
-    }
-    
-    // Pas de données GTM = pas d'affichage (pas de fake)
-    return {
-      visitors24h: 0,
-      sessionsToday: 0, 
-      pageViews: 0,
-      bounceRate: 0
+
+      // Calculs analytics réels depuis Supabase
+      const pageViewCount = pageViews?.length || 0
+      const uniqueClients = new Set(pageViews?.map(pv => pv.client_id)).size || 0
+      const devisCount = customEvents?.filter(e => e.event_name === 'devis_opened').length || 0
+      const faqCount = customEvents?.filter(e => e.event_name === 'faq_opened').length || 0
+
+      return {
+        visitors24h: uniqueClients, // Visiteurs uniques basé client_id
+        sessionsToday: Math.max(1, Math.floor(uniqueClients * 0.8)),
+        pageViews: pageViewCount,
+        bounceRate: pageViewCount > 0 ? Math.max(20, 100 - ((customEvents?.length || 0) / pageViewCount * 100)) : 0,
+        devisSimulated: devisCount,
+        faqOpened: faqCount
+      }
+
+    } catch (error) {
+      console.error('Erreur fetch analytics Supabase:', error)
+      return {
+        visitors24h: 0,
+        sessionsToday: 0,
+        pageViews: 0,
+        bounceRate: 0,
+        devisSimulated: 0,
+        faqOpened: 0
+      }
     }
   }
 
-  // Lecture GTM dataLayer pour events MonadAI
-  const getGTMEvents = () => {
-    if (typeof window === 'undefined' || !window.dataLayer) {
-      return { devisSimulated: 0, faqOpened: 0 }
-    }
-
-    const events = window.dataLayer.filter((event: any) => 
-      event.eventName === 'devis_opened' || 
-      event.eventName === 'faq_opened'
-    )
-
-    return {
-      devisSimulated: events.filter((e: any) => e.eventName === 'devis_opened').length,
-      faqOpened: events.filter((e: any) => e.eventName === 'faq_opened').length
-    }
-  }
-
-  // Récupération données complètes (GTM 100%)
+  // Récupération données complètes depuis Supabase (GTM → Webhook → DB)
   const fetchRealAnalytics = async () => {
     setLoading(true)
     setError(null)
     
     try {
-      const ga4Data = getGA4DataFromGTM()  // Plus d'API bugguée !
-      const gtmEvents = getGTMEvents()
+      const analyticsData = await fetchAnalyticsFromSupabase()
       
-      const completeData: RealAnalyticsData = {
-        ...ga4Data,
-        ...gtmEvents,
+      setAnalyticsData({
+        ...analyticsData,
         lastUpdated: new Date().toISOString()
-      }
-      
-      setAnalyticsData(completeData)
+      })
     } catch (error) {
       console.error('Erreur analytics:', error)
       setError('Impossible de récupérer les données analytics')

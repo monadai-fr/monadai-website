@@ -123,8 +123,8 @@ export function validateSuspiciousName(name: string, email: string): SecurityVal
   }
 }
 
-// Nouvelle fonction : Validation géographique IP
-export function validateIPGeolocation(ip: string): SecurityValidation {
+// Géolocalisation IP intelligente (Cloudflare headers + fallback IPinfo)
+export function validateIPGeolocation(ip: string, request?: any): SecurityValidation {
   const blockedReasons: string[] = []
   let risk: 'low' | 'medium' | 'high' = 'low'
   
@@ -132,12 +132,38 @@ export function validateIPGeolocation(ip: string): SecurityValidation {
     return { isValid: true, risk: 'low', blockedReasons: [] }
   }
   
-  // Vérification ranges IP Russie/Chine (approximatif)
-  const ipPrefix = ip.split('.')[0]
+  // Méthode 1 : Headers Cloudflare (gratuit, précis)
+  if (request) {
+    const cfCountry = request.headers.get('CF-IPCountry')
+    const cfThreat = request.headers.get('CF-Threat-Score')
+    
+    if (cfCountry === 'RU' || cfCountry === 'CN') {
+      blockedReasons.push(`IP géolocalisation bloquée (${cfCountry})`)
+      risk = 'high'
+    }
+    
+    if (cfThreat && parseInt(cfThreat) > 50) {
+      blockedReasons.push(`IP threat score élevé (${cfThreat})`)
+      risk = 'high'
+    }
+    
+    return {
+      isValid: blockedReasons.length === 0,
+      risk,
+      blockedReasons
+    }
+  }
   
-  if (BLOCKED_IP_RANGES.includes(ipPrefix + '.')) {
-    blockedReasons.push('IP géolocalisation bloquée (RU/CN)')
-    risk = 'high'
+  // Méthode 2 : Fallback ranges IP (approximatif) - RÉDUIT AUX ÉVIDENTS
+  const suspiciousRanges = [
+    '5.', '37.', '77.', '78.', '79.', '80.', '81.', '82.', '83.', '84.', '85.', // Russie évidents
+    '1.', '14.', '36.', '49.', '58.', '59.', '60.', '61.', '101.', '103.'  // Chine évidents
+  ]
+  
+  const ipPrefix = ip.split('.')[0]
+  if (suspiciousRanges.includes(ipPrefix + '.')) {
+    blockedReasons.push('IP range suspect détecté')
+    risk = 'medium' // Medium car moins précis
   }
   
   return {
@@ -197,16 +223,16 @@ export function validateEmail(email: string): SecurityValidation {
   }
 }
 
-export function validateContactForm(data: any, clientIP?: string): SecurityValidation {
+export function validateContactForm(data: any, clientIP?: string, request?: any): SecurityValidation {
   const blockedReasons: string[] = []
   let risk: 'low' | 'medium' | 'high' = 'low'
   
   // 1. Validation géographique IP (si fournie)
   if (clientIP) {
-    const ipValidation = validateIPGeolocation(clientIP)
+    const ipValidation = validateIPGeolocation(clientIP, request)
     if (!ipValidation.isValid) {
       blockedReasons.push(...ipValidation.blockedReasons)
-      risk = 'high'
+      risk = ipValidation.risk
     }
   }
   

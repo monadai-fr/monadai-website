@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
       message: sanitizeInput(body.message)
     }
     
-    // 4. Validation sécurité business (avec IP géographique)
-    const securityCheck = validateContactForm(sanitizedData, clientIP)
+    // 4. Validation sécurité business (avec IP géographique Cloudflare)
+    const securityCheck = validateContactForm(sanitizedData, clientIP, request)
     if (!securityCheck.isValid) {
       await logSecurityEvent('spam_detected', {
         ip: clientIP,
