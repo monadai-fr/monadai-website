@@ -112,8 +112,9 @@ export async function POST(request: NextRequest) {
       throw new Error('Erreur de sauvegarde des données')
     }
 
-    // 2. Envoyer email notification
+    // 2. Envoyer emails (admin + client)
     try {
+      // EMAIL ADMIN (existant)
       await resend.emails.send({
         from: 'MonadAI <noreply@monadai.fr>',
         to: [process.env.CONTACT_EMAIL || 'raph@monadai.fr'],
@@ -149,6 +150,99 @@ export async function POST(request: NextRequest) {
               Reçu le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}<br/>
               Dashboard: <a href="https://app.supabase.com" style="color: #1B4332;">Voir dans Supabase</a>
             </p>
+          </div>
+        `,
+      })
+
+      // EMAIL CLIENT (nouveau) 🆕
+      await resend.emails.send({
+        from: 'MonadAI <noreply@monadai.fr>',
+        to: [validatedData.email],
+        subject: 'Votre demande MonadAI a été reçue ✅',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+            
+            <!-- Header avec logo MonadAI -->
+            <div style="background: linear-gradient(135deg, #1B4332 0%, #2D5A3D 100%); padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0;">
+              <div style="background: #ffffff; width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
+                <span style="color: #1B4332; font-size: 24px; font-weight: bold;">M</span>
+              </div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold;">MonadAI</h1>
+              <p style="color: #E8F5E8; margin: 5px 0 0 0; font-size: 14px;">Solutions Web & IA sur mesure</p>
+            </div>
+
+            <!-- Corps du message -->
+            <div style="padding: 30px 20px;">
+              <h2 style="color: #1B4332; margin: 0 0 20px 0; font-size: 22px;">
+                Bonjour ${validatedData.name.split(' ')[0]} 👋
+              </h2>
+              
+              <p style="color: #374151; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
+                Merci pour votre demande concernant <strong>${
+                  validatedData.service === 'web' ? 'le développement web' :
+                  validatedData.service === 'ia' ? "l'automatisation IA" :
+                  validatedData.service === 'transformation' ? 'la transformation digitale' :
+                  validatedData.service === 'audit' ? "l'audit technique" : 'notre service'
+                }</strong>. 
+                Nous avons bien reçu votre message et nous nous engageons à vous répondre sous <strong>24h</strong>.
+              </p>
+
+              <div style="background: #F0FDF4; border-left: 4px solid #1B4332; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                <h3 style="color: #1B4332; margin: 0 0 15px 0; font-size: 18px;">📋 Récapitulatif de votre demande :</h3>
+                <ul style="margin: 0; padding-left: 20px; color: #374151;">
+                  <li style="margin-bottom: 8px;"><strong>Service :</strong> ${
+                    validatedData.service === 'web' ? 'Développement Web' :
+                    validatedData.service === 'ia' ? 'Automatisation IA' :
+                    validatedData.service === 'transformation' ? 'Transformation Digitale' :
+                    validatedData.service === 'audit' ? 'Audit Technique' : 'Autre service'
+                  }</li>
+                  <li style="margin-bottom: 8px;"><strong>Budget envisagé :</strong> ${
+                    validatedData.budget === 'less-5k' ? 'Moins de 5K€' :
+                    validatedData.budget === '5k-10k' ? '5K€ - 10K€' :
+                    validatedData.budget === '10k-25k' ? '10K€ - 25K€' :
+                    validatedData.budget === '25k-50k' ? '25K€ - 50K€' :
+                    validatedData.budget === 'more-50k' ? 'Plus de 50K€' : 'À définir'
+                  }</li>
+                  <li><strong>Délai souhaité :</strong> ${
+                    validatedData.timeline === 'asap' ? 'Le plus rapidement possible' :
+                    validatedData.timeline === '1-month' ? 'Dans le mois' :
+                    validatedData.timeline === '1-3-months' ? 'Dans 1 à 3 mois' :
+                    validatedData.timeline === '3-6-months' ? 'Dans 3 à 6 mois' : 'Flexible'
+                  }</li>
+                </ul>
+              </div>
+
+              <p style="color: #374151; line-height: 1.6; margin: 20px 0; font-size: 16px;">
+                En attendant notre réponse détaillée, n'hésitez pas à nous contacter directement si vous avez des questions urgentes.
+              </p>
+              
+              <!-- Contact Info -->
+              <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h4 style="color: #1B4332; margin: 0 0 15px 0; font-size: 16px;">📞 Contact direct :</h4>
+                <p style="margin: 0; color: #374151;">
+                  <strong>Téléphone :</strong> <a href="tel:+33647244809" style="color: #1B4332; text-decoration: none;">06 47 24 48 09</a><br/>
+                  <strong>Email :</strong> <a href="mailto:raph@monadai.fr" style="color: #1B4332; text-decoration: none;">raph@monadai.fr</a>
+                </p>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background: #F9FAFB; padding: 20px; border-top: 1px solid #E5E7EB; text-align: center; border-radius: 0 0 8px 8px;">
+              <p style="margin: 0 0 10px 0; color: #6B7280; font-size: 14px;">
+                <strong>Raphael LOTTE</strong><br/>
+                Fondateur MonadAI
+              </p>
+              
+              <div style="margin: 15px 0;">
+                <a href="https://monadai.fr" style="color: #1B4332; text-decoration: none; font-size: 14px; margin: 0 15px;">🌐 Site web</a>
+                <a href="https://www.linkedin.com/in/raphael-lotte-17a685331/" style="color: #1B4332; text-decoration: none; font-size: 14px; margin: 0 15px;" target="_blank">💼 LinkedIn</a>
+              </div>
+              
+              <p style="margin: 15px 0 0 0; color: #9CA3AF; font-size: 12px;">
+                MonadAI • Solutions Web & IA • Bordeaux, France<br/>
+                Vous recevez cet email suite à votre demande de contact sur monadai.fr
+              </p>
+            </div>
           </div>
         `,
       })

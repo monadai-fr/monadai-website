@@ -21,4 +21,15 @@ export interface ContactRecord {
   newsletter: boolean
   consent: boolean
   status?: 'new' | 'contacted' | 'quoted' | 'client' | 'closed'
+  notes?: ContactNote[]
+  last_contacted?: string
+}
+
+// Type pour les notes structurées
+export interface ContactNote {
+  id: string
+  date: string // ISO string
+  type: 'call' | 'email' | 'meeting' | 'note'
+  content: string
+  author: string // "Raphael"
 }
