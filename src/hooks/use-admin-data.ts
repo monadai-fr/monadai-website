@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRealAnalytics } from './use-real-analytics'
 
@@ -45,8 +45,9 @@ export function useAdminData() {
   const [leads, setLeads] = useState<LeadData[]>([])
   const [loading, setLoading] = useState(true)
   
-  // Hook analytics réelles (GA4 + GTM) avec réactivité
-  const { analyticsData: realAnalytics, refreshData: refreshAnalytics } = useRealAnalytics()
+  // Hook analytics réelles (GA4 + GTM) - SIMPLE
+  const { analyticsData: realAnalytics } = useRealAnalytics()
+  const initRef = useRef(false)
 
   // Calcul lead scoring automatique
   const calculateLeadScore = (lead: any): number => {
@@ -73,8 +74,8 @@ export function useAdminData() {
     return Math.min(score, 100)
   }
 
-  // Récupération données business (mémoïsée)
-  const fetchBusinessMetrics = useCallback(async () => {
+  // Récupération données business
+  const fetchBusinessMetrics = async () => {
     try {
       // Contacts dernières 24h avec fallback intelligent
       const { data: contacts24h, error: error24h } = await supabase
@@ -146,10 +147,10 @@ export function useAdminData() {
         avgTicket: 0
       })
     }
-  }, [realAnalytics]) // Dépendance realAnalytics pour recalcul auto
+  }
 
-  // Récupération données sécurité (mémoïsée)
-  const fetchSecurityMetrics = useCallback(async () => {
+  // Récupération données sécurité
+  const fetchSecurityMetrics = async () => {
     try {
       const { data: securityLogs, error } = await supabase
         .from('security_logs')
@@ -199,10 +200,10 @@ export function useAdminData() {
         suspiciousIPs: []
       })
     }
-  }, []) // Pas de dépendances - données statiques
+  }
 
-  // Récupération leads avec scoring (mémoïsée)  
-  const fetchLeads = useCallback(async () => {
+  // Récupération leads avec scoring
+  const fetchLeads = async () => {
     try {
       const { data: contacts, error } = await supabase
         .from('contacts')
@@ -226,46 +227,40 @@ export function useAdminData() {
       console.error('Erreur fetch leads:', error)
       setLeads([])
     }
-  }, []) // Pas de dépendances - calcul basé sur calculateLeadScore
+  }
 
-  // Refresh données (mémoïsée)
-  const refreshData = useCallback(async () => {
+  // Refresh données - SIMPLE SANS LOOP
+  const refreshData = async () => {
     setLoading(true)
-    await Promise.all([
-      fetchBusinessMetrics(),
-      fetchSecurityMetrics(), 
-      fetchLeads()
-    ])
-    setLoading(false)
-  }, [fetchBusinessMetrics, fetchSecurityMetrics, fetchLeads]) // Dépendances des fonctions fetch
-
-  // Réactivité analytics : quand realAnalytics change → refetch metrics
-  useEffect(() => {
-    if (realAnalytics) {
-      console.log('📊 Analytics mises à jour → Recalcul business metrics')
-      fetchBusinessMetrics()
+    try {
+      await Promise.all([
+        fetchBusinessMetrics(),
+        fetchSecurityMetrics(), 
+        fetchLeads()
+      ])
+    } catch (error) {
+      console.error('Erreur refresh dashboard:', error)
+    } finally {
+      setLoading(false)
     }
-  }, [realAnalytics?.lastUpdated]) // Dépendance sur lastUpdated pour trigger refresh
+  }
 
-  // Init + refresh auto (côté client seulement)
+  // Init ONE TIME ONLY
   useEffect(() => {
-    const initData = async () => {
-      console.log('🚀 Init dashboard data')
-      await refreshData()
-    }
-    
-    initData()
-    
-    // Auto-refresh coordonné avec analytics
-    if (typeof window !== 'undefined') {
+    if (!initRef.current && typeof window !== 'undefined') {
+      initRef.current = true
+      console.log('🚀 Init dashboard data - ONE TIME')
+      refreshData()
+      
+      // Auto-refresh simple toutes les 2 minutes
       const interval = setInterval(() => {
-        console.log('⏰ Auto-refresh dashboard complet')
-        refreshAnalytics() // Refresh analytics en premier
-        setTimeout(refreshData, 1000) // Puis business data 1s après
-      }, 60000) // 1 minute (moins agressif que 30s)
+        console.log('⏰ Auto-refresh dashboard')
+        refreshData()
+      }, 120000) // 2 minutes moins agressif
+      
       return () => clearInterval(interval)
     }
-  }, [refreshData, refreshAnalytics]) // Dépendances correctes
+  }, []) // AUCUNE DÉPENDANCE pour éviter loops
 
   return {
     businessMetrics,
