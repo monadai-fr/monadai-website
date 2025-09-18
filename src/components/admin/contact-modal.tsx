@@ -19,7 +19,7 @@ export default function ContactModal({ isOpen, onClose, lead, onSuccess }: Conta
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const focusRef = useFocusTrap<HTMLDivElement>(isOpen)
+  const focusRef = useFocusTrap(isOpen)
 
   // Génération automatique objet email
   useEffect(() => {

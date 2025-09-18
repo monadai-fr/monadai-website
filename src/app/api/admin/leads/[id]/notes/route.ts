@@ -13,8 +13,9 @@ import { ContactNote } from '@/lib/supabase'
 // GET /api/admin/leads/[id]/notes - Récupérer toutes les notes
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const { data: contact, error } = await supabase
       .from('contacts')
@@ -51,8 +52,9 @@ export async function GET(
 // POST /api/admin/leads/[id]/notes - Ajouter nouvelle note
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const body = await request.json()
     const { type, content } = body
@@ -127,8 +129,9 @@ export async function POST(
 // PATCH /api/admin/leads/[id]/notes - Modifier note existante
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const body = await request.json()
     const { noteId, content } = body
@@ -199,8 +202,9 @@ export async function PATCH(
 // DELETE /api/admin/leads/[id]/notes?noteId=xxx - Supprimer note
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const { searchParams } = new URL(request.url)
     const noteId = searchParams.get('noteId')

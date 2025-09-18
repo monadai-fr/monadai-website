@@ -33,7 +33,7 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
   const [editingNote, setEditingNote] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
 
-  const focusRef = useFocusTrap<HTMLDivElement>(isOpen)
+  const focusRef = useFocusTrap(isOpen)
 
   // Reset formulaire à l'ouverture
   useEffect(() => {

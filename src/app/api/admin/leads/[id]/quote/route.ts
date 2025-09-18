@@ -21,8 +21,9 @@ interface DevisData {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const body = await request.json()
     const { prestations, prix_ht, conditions_paiement, validite_jours, notes_additionnelles } = body

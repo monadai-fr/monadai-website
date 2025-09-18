@@ -19,8 +19,9 @@ const STATUS_LABELS = {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const body = await request.json()
     const { status } = body
