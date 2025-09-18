@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    // GTM Server-Side ou HTTP Request Tag envoie ces données
+    // GTM envoie ces données
     const {
       event_name,
       page_location,
@@ -20,22 +20,34 @@ export async function POST(request: NextRequest) {
       timestamp
     } = body
     
-    // Validation basique
-    if (!event_name) {
-      return NextResponse.json({ success: false, error: 'event_name requis' }, { status: 400 })
+    // Validation event_name (éviter undefined)
+    const cleanEventName = event_name && event_name !== 'undefined' ? event_name : 'page_view'
+    
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+    let country = request.headers.get('CF-IPCountry') || null
+    
+    // Fallback IPinfo.io si pas Cloudflare
+    if (!country && clientIP !== 'unknown' && process.env.IPINFO_TOKEN) {
+      try {
+        const ipResponse = await fetch(`https://ipinfo.io/${clientIP}/json?token=${process.env.IPINFO_TOKEN}`)
+        const ipData = await ipResponse.json()
+        country = ipData.country || null
+      } catch (error) {
+        console.warn('IPinfo.io error:', error)
+      }
     }
     
     // Store analytics event dans Supabase
     const { error } = await supabase
       .from('analytics_events')
       .insert([{
-        event_name,
+        event_name: cleanEventName,
         page_url: page_location || '',
-        client_id: client_id || 'unknown',
+        client_id: client_id || `session_${Date.now()}`,
         event_data: event_data || {},
         user_agent: user_agent || '',
-        ip_address: request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown',
-        cf_country: request.headers.get('CF-IPCountry') || null,
+        ip_address: clientIP,
+        cf_country: country,
         created_at: timestamp || new Date().toISOString()
       }])
     

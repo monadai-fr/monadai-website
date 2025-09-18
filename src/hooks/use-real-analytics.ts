@@ -100,12 +100,18 @@ export function useRealAnalytics() {
     }
   }
 
-  // Auto-refresh toutes les 2 minutes
+  // Auto-refresh intelligent (côté client seulement)
   useEffect(() => {
     fetchRealAnalytics()
     
-    const interval = setInterval(fetchRealAnalytics, 2 * 60 * 1000)
-    return () => clearInterval(interval)
+    // Auto-refresh seulement côté client (dashboard admin)
+    if (typeof window !== 'undefined') {
+      const interval = setInterval(() => {
+        console.log('🔄 Auto-refresh analytics depuis Supabase')
+        fetchRealAnalytics()
+      }, 30000) // 30 secondes pour dashboard réactif
+      return () => clearInterval(interval)
+    }
   }, [])
 
   return {

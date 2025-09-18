@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useEffect } from 'react'
 import { useAdminData } from '@/hooks/use-admin-data'
 import StatCard from '@/components/admin/stat-card'
 import { formatPrice } from '@/lib/utils'
@@ -8,6 +9,14 @@ import { staggerContainer, staggerItem } from '@/lib/motion-variants'
 
 export default function AdminDashboard() {
   const { businessMetrics, securityMetrics, leads, loading, refreshData } = useAdminData()
+  
+  // Force refresh après hydratation côté client
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log('🔄 Force refresh après hydratation client')
+      setTimeout(refreshData, 1000) // Délai pour hydratation complète
+    }
+  }, [])
 
   // Segmentation leads par score
   const hotLeads = leads.filter(lead => lead.score >= 70)

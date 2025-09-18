@@ -239,13 +239,15 @@ export function useAdminData() {
     setLoading(false)
   }
 
-  // Init + refresh auto
+  // Init + refresh auto (côté client seulement)
   useEffect(() => {
     refreshData()
     
-    // Refresh auto toutes les 30 secondes
-    const interval = setInterval(refreshData, 30000)
-    return () => clearInterval(interval)
+    // Refresh auto toutes les 30 secondes (côté client)
+    if (typeof window !== 'undefined') {
+      const interval = setInterval(refreshData, 30000)
+      return () => clearInterval(interval)
+    }
   }, [])
 
   return {
