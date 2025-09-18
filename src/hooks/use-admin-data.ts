@@ -76,13 +76,25 @@ export function useAdminData() {
   // Récupération données business
   const fetchBusinessMetrics = async () => {
     try {
-      // Contacts dernières 24h avec fallback si table n'existe pas
-      const { data: contacts24h, error } = await supabase
+      // Contacts dernières 24h avec fallback intelligent
+      const { data: contacts24h, error: error24h } = await supabase
         .from('contacts')
         .select('*')
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
 
-      if (error) {
+      // Si pas de contacts 24h, prendre les plus récents pour avoir des métriques
+      let contactsToUse = contacts24h
+      if ((!contacts24h || contacts24h.length === 0) && !error24h) {
+        console.log('📊 Pas de contacts 24h, utilisation contacts récents pour métriques')
+        const { data: recentContacts } = await supabase
+          .from('contacts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10)
+        contactsToUse = recentContacts
+      }
+
+      if (error24h) {
         console.warn('Table contacts pas encore créée')
         setBusinessMetrics({
           visitors24h: 0,
@@ -105,14 +117,14 @@ export function useAdminData() {
         'not-defined': 5000
       }
 
-      const pipelineValue = contacts24h?.reduce((total, contact) => {
+      const pipelineValue = contactsToUse?.reduce((total, contact) => {
         return total + (budgetValues[contact.budget as keyof typeof budgetValues] || 0)
       }, 0) || 0
 
       // Intégration données GA4 + GTM réelles
       const visitorsCount = realAnalytics?.visitors24h || 0
       const devisCount = realAnalytics?.devisSimulated || 0
-      const contactsCount = contacts24h?.length || 0
+      const contactsCount = contactsToUse?.length || 0
       
       setBusinessMetrics({
         visitors24h: visitorsCount,

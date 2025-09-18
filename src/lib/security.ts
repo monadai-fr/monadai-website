@@ -16,11 +16,11 @@ const SPAM_KEYWORDS = [
 // IPs géographiques bloquées (Russie/Chine)
 const BLOCKED_COUNTRIES = ['RU', 'CN']
 
-// Ranges IP approximatifs pour blocage géographique
+// Ranges IP approximatifs pour blocage géographique (corrigés - 92.x = Europe/France souvent)
 const BLOCKED_IP_RANGES = [
-  // Russie (ranges principaux)
+  // Russie (ranges plus précis)
   '5.', '31.', '37.', '46.', '62.', '77.', '78.', '79.', '80.', '81.', '82.', '83.', '84.', '85.',
-  '86.', '87.', '88.', '89.', '90.', '91.', '92.', '93.', '94.', '95.',
+  '86.', '87.', '88.', '89.', '90.', '91.', '93.', '94.', '95.', // ← 92. RETIRÉ !
   // Chine (ranges principaux) 
   '1.', '14.', '27.', '36.', '39.', '42.', '49.', '58.', '59.', '60.', '61.', '101.', 
   '103.', '106.', '110.', '111.', '112.', '113.', '114.', '115.', '116.', '117.', '118.', '119.',
