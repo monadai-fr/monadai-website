@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
 /**
  * Hook Analytics Réelles MonadAI
- * Intégration GA4 + GTM dataLayer pour dashboard 100% fonctionnel
+ * Intégration GTM → Supabase pour dashboard 100% fonctionnel
  */
 
 export interface RealAnalyticsData {
@@ -53,9 +54,9 @@ export function useRealAnalytics() {
 
       // Calculs analytics réels depuis Supabase
       const pageViewCount = pageViews?.length || 0
-      const uniqueClients = new Set(pageViews?.map(pv => pv.client_id)).size || 0
-      const devisCount = customEvents?.filter(e => e.event_name === 'devis_opened').length || 0
-      const faqCount = customEvents?.filter(e => e.event_name === 'faq_opened').length || 0
+      const uniqueClients = new Set(pageViews?.map((pv: any) => pv.client_id)).size || 0
+      const devisCount = customEvents?.filter((e: any) => e.event_name === 'devis_opened').length || 0
+      const faqCount = customEvents?.filter((e: any) => e.event_name === 'faq_opened').length || 0
 
       return {
         visitors24h: uniqueClients, // Visiteurs uniques basé client_id
