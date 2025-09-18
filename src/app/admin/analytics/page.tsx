@@ -2,13 +2,17 @@
 
 import { motion } from 'framer-motion'
 import { useAdminData } from '@/hooks/use-admin-data'
+import { getGTMAnalytics } from '@/lib/gtm-analytics'
 import { staggerContainer, staggerItem } from '@/lib/motion-variants'
 import { formatPrice } from '@/lib/utils'
 
 export default function AdminAnalytics() {
   const { businessMetrics, leads, loading } = useAdminData()
+  
+  // Analytics GTM temps réel
+  const gtmAnalytics = getGTMAnalytics()
 
-  // Analyse conversion funnel (basé sur données réelles)
+  // Analyse conversion funnel (données réelles)
   const totalVisitors = businessMetrics?.visitors24h || 0
   const totalContacts = businessMetrics?.contactsSubmitted || 0
   const totalDevis = businessMetrics?.devisSimulated || 0
@@ -101,7 +105,8 @@ export default function AdminAnalytics() {
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <h4 className="font-medium text-blue-900 mb-2">💡 Insights Automatiques</h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Visiteurs analysés : {totalVisitors} sur 24h</li>
+              <li>• Visiteurs analysés : {totalVisitors} sur 24h (GTM temps réel)</li>
+              <li>• Pages vues : {gtmAnalytics.pageViews} (sessions actives)</li>
               <li>• Taux devis : {totalDevis > 0 ? `${Math.round((totalDevis / totalVisitors) * 100)}%` : '0%'} des visiteurs</li>
               <li>• Conversion finale : {totalContacts > 0 ? `${Math.round((totalContacts / totalVisitors) * 100)}%` : '0%'}</li>
               {totalContacts === 0 && <li>• Aucune conversion aujourd'hui - optimiser le funnel</li>}

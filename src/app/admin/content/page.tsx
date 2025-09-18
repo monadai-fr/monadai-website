@@ -4,15 +4,13 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { staggerContainer, staggerItem } from '@/lib/motion-variants'
 
-// Projets SaaS - Section désactivée en attente de vraies données
-// TODO: Connecter à table Supabase 'projects' quand elle existera
+// Projets SaaS - En attente table Supabase
 const projectsData: any[] = []
 
 export default function AdminContent() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
   
-  // FAQ stats - En attente connexion GTM analytics réelle  
-  // TODO: Remplacer par vraies données GTM quand webhook configuré
+  // FAQ stats - En attente données analytics
   const faqStats: any[] = []
 
   const getStatusColor = (status: string) => {
@@ -189,8 +187,8 @@ export default function AdminContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             <h3 className="text-lg font-medium text-gray-900 mb-2">FAQ Analytics</h3>
-            <p className="text-gray-600 mb-4">Les statistiques FAQ seront disponibles après connexion GTM analytics.</p>
-            <p className="text-sm text-gray-500">En attente de webhook GTM configuré.</p>
+            <p className="text-gray-600 mb-4">Les statistiques FAQ seront disponibles après implémentation analytics.</p>
+            <p className="text-sm text-gray-500">En attente de configuration tracking.</p>
           </div>
         )}
       </motion.div>

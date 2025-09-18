@@ -3,8 +3,8 @@
 import { track } from '@vercel/analytics'
 
 /**
- * Hook Analytics hybride MonadAI - Vercel + GTM
- * Respect principe DRY pour tracking business
+ * Hook Analytics MonadAI - Tracking events business
+ * Solution DRY pour tracking utilisateur (Vercel + GTM)
  */
 
 declare global {

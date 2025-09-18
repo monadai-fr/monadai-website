@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getGTMAnalytics } from '@/lib/gtm-analytics'
 
 /**
  * Hook Admin Data - Business Intelligence MonadAI
- * NETTOYÉ - Logique simple contacts/leads seulement
+ * Architecture hybride : Contacts (Supabase) + Analytics (GTM dataLayer)
  */
 
 export interface BusinessMetrics {
@@ -83,7 +84,6 @@ export function useAdminData() {
       // Si pas de contacts 24h, prendre les plus récents pour avoir des métriques
       let contactsToUse = contacts24h
       if ((!contacts24h || contacts24h.length === 0) && !error24h) {
-        console.log('📊 Pas de contacts 24h, utilisation contacts récents pour métriques')
         const { data: recentContacts } = await supabase
           .from('contacts')
           .select('*')
@@ -93,7 +93,6 @@ export function useAdminData() {
       }
 
       if (error24h) {
-        console.warn('Table contacts pas encore créée')
         setBusinessMetrics({
           visitors24h: 0,
           devisSimulated: 0, 
@@ -119,19 +118,19 @@ export function useAdminData() {
         return total + (budgetValues[contact.budget as keyof typeof budgetValues] || 0)
       }, 0) || 0
 
-      // Métriques basées contacts Supabase SEULEMENT
+      // Métriques hybrides : Contacts (Supabase) + Analytics (GTM)
       const contactsCount = contactsToUse?.length || 0
+      const gtmData = getGTMAnalytics()
       
       setBusinessMetrics({
-        visitors24h: 0, // Placeholder - à définir alternative
-        devisSimulated: 0, // Placeholder - à définir alternative  
+        visitors24h: gtmData.visitors24h,
+        devisSimulated: gtmData.devisSimulated,
         contactsSubmitted: contactsCount,
-        conversionRate: 0, // Placeholder - à calculer différemment
+        conversionRate: gtmData.visitors24h > 0 ? (contactsCount / gtmData.visitors24h) * 100 : 0,
         pipelineValue,
         avgTicket: contactsCount > 0 ? pipelineValue / contactsCount : 0
       })
     } catch (error) {
-      console.error('Erreur fetch business metrics:', error)
       // Fallback simple
       setBusinessMetrics({
         visitors24h: 0,
@@ -153,7 +152,6 @@ export function useAdminData() {
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
 
       if (error) {
-        console.warn('Table security_logs pas encore créée, utilisation données mock')
         setSecurityMetrics({
           rateLimitHits: 0,
           spamBlocked: 0,
@@ -186,7 +184,6 @@ export function useAdminData() {
         suspiciousIPs
       })
     } catch (error) {
-      console.error('Erreur fetch security metrics:', error)
       setSecurityMetrics({
         rateLimitHits: 0,
         spamBlocked: 0,
@@ -207,7 +204,6 @@ export function useAdminData() {
         .limit(50)
 
       if (error) {
-        console.warn('Table contacts pas encore créée pour leads, utilisation données mock')
         setLeads([])
         return
       }
@@ -219,7 +215,6 @@ export function useAdminData() {
 
       setLeads(enrichedLeads)
     } catch (error) {
-      console.error('Erreur fetch leads:', error)
       setLeads([])
     }
   }
@@ -234,7 +229,6 @@ export function useAdminData() {
         fetchLeads()
       ])
     } catch (error) {
-      console.error('Erreur refresh dashboard:', error)
     } finally {
       setLoading(false)
     }
@@ -244,14 +238,10 @@ export function useAdminData() {
   useEffect(() => {
     if (!initRef.current && typeof window !== 'undefined') {
       initRef.current = true
-      console.log('🚀 Init admin data - contacts/leads seulement')
       refreshData()
       
-      // Auto-refresh modéré pour contacts/leads
-      const interval = setInterval(() => {
-        console.log('⏰ Refresh contacts/leads')
-        refreshData()
-      }, 300000) // 5 minutes (contacts changent moins souvent)
+      // Auto-refresh pour contacts + analytics GTM
+      const interval = setInterval(refreshData, 120000) // 2 minutes
       
       return () => clearInterval(interval)
     }

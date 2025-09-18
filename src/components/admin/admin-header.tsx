@@ -171,7 +171,7 @@ export default function AdminHeader() {
       {/* Last Update Timer */}
       <div className="flex items-center justify-center pt-2 border-t border-gray-100 mt-4">
         <div className="text-xs text-gray-500">
-          Dernière mise à jour : {currentTime} • Auto-refresh 30s
+          Dernière mise à jour : {currentTime}
         </div>
       </div>
     </header>

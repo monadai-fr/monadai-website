@@ -29,7 +29,6 @@ export default function AdminSecurity() {
         .limit(50)
 
       if (error) {
-        console.warn('Table security_logs pas encore créée, affichage vide')
         setSecurityLogs([])
         setLoading(false)
         return
@@ -37,7 +36,6 @@ export default function AdminSecurity() {
 
       setSecurityLogs(logs || [])
     } catch (error) {
-      console.error('Erreur fetch security logs:', error)
       setSecurityLogs([])
     } finally {
       setLoading(false)
