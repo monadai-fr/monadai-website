@@ -36,7 +36,7 @@ export default function AdminLayoutContent({
           {/* Main Content - Responsive padding pour éviter collision sidebar */}
           <div className="flex-1 flex flex-col lg:ml-0">
             <AdminHeader onMobileMenuClick={toggleMobileSidebar} />
-            <main className="flex-1 p-4 md:p-6">
+            <main className="flex-1 p-2 sm:p-4 md:p-6">
               {children}
             </main>
             <AdminFooter />

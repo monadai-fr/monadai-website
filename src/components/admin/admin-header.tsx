@@ -37,11 +37,11 @@ export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-4">
+    <header className="bg-white border-b border-gray-200 px-2 sm:px-4 md:px-6 py-4">
       <div className="flex items-center justify-between">
         
         {/* Mobile Burger Menu + Page Title */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           {/* Burger Menu - Visible seulement mobile/tablet */}
           <button
             onClick={onMobileMenuClick}
@@ -54,9 +54,9 @@ export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
           </button>
 
           {/* Page Title & Breadcrumb */}
-          <div className="flex items-center space-x-4">
-            <div>
-              <h1 className="text-lg md:text-xl font-bold text-gray-900">{getPageTitle(pathname)}</h1>
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 truncate">{getPageTitle(pathname)}</h1>
               <div className="hidden sm:flex items-center text-sm text-gray-500 mt-1">
                 <Link href="/admin" className="hover:text-green-sapin transition-colors">
                   Admin
@@ -75,9 +75,9 @@ export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
             </div>
           </div>
 
-          {/* Live Metrics - Responsive breakpoints */}
+          {/* Live Metrics - Visible dès xl au lieu de 2xl */}
           {!loading && businessMetrics && (
-            <div className="hidden 2xl:flex items-center gap-3 ml-4 xl:ml-8">
+            <div className="hidden xl:flex items-center gap-3 ml-4 xl:ml-6">
               <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                 <svg className="w-4 h-4 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -95,11 +95,11 @@ export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
           )}
         </div>
 
-        {/* Actions & User Profile - Responsive spacing */}
-        <div className="flex items-center gap-2 md:gap-4">
+        {/* Actions & User Profile - Ultra responsive */}
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-4 flex-shrink-0">
           
           {/* Quick Actions - Responsive gaps */}
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-1 sm:gap-2">
             {/* Refresh Data */}
             <motion.button
               onClick={refreshData}
@@ -138,18 +138,18 @@ export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
 
           {/* User Profile Enhanced */}
           {session && (
-            <div className="flex items-center gap-2 md:gap-3 bg-gray-50 border border-gray-200 rounded-lg p-2">
-              <div className="flex items-center">
+            <div className="flex items-center gap-1 sm:gap-2 md:gap-3 bg-gray-50 border border-gray-200 rounded-lg p-1 sm:p-2">
+              <div className="flex items-center min-w-0">
                 <img 
                   src={session.user?.image || '/favicon-192.webp'} 
                   alt="Profile Admin MonadAI"
-                  className="w-8 h-8 rounded-full mr-3 border-2 border-green-sapin"
+                  className="w-6 sm:w-8 h-6 sm:h-8 rounded-full mr-2 sm:mr-3 border-2 border-green-sapin flex-shrink-0"
                   onError={(e) => {
                     e.currentTarget.src = '/favicon-192.webp'
                   }}
                 />
-                <div className="hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900">{session.user?.name?.split(' ')[0]}</p>
+                <div className="hidden md:block min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{session.user?.name?.split(' ')[0]}</p>
                   <p className="text-xs text-gray-500">Admin • En ligne</p>
                 </div>
               </div>
@@ -159,11 +159,11 @@ export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
                 <motion.a
                   href="/"
                   target="_blank"
-                  className="p-1.5 text-gray-500 hover:text-green-sapin rounded transition-colors"
+                  className="p-1 sm:p-1.5 text-gray-500 hover:text-green-sapin rounded transition-colors"
                   whileHover={{ scale: 1.1 }}
                   title="Voir le site"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 sm:w-4 h-3 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                 </motion.a>
@@ -171,12 +171,12 @@ export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
                 {/* Logout */}
                 <motion.button
                   onClick={() => signOut({ callbackUrl: '/' })}
-                  className="p-1.5 text-red-600 hover:text-red-700 rounded transition-colors"
+                  className="p-1 sm:p-1.5 text-red-600 hover:text-red-700 rounded transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   title="Déconnexion sécurisée"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 sm:w-4 h-3 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                 </motion.button>

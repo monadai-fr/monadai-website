@@ -214,7 +214,7 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
         >
           <motion.div
             ref={focusRef}
-            className="bg-white rounded-lg max-w-4xl md:max-w-6xl w-full max-h-[90vh] flex flex-col mx-4"
+            className="bg-white rounded-lg max-w-4xl md:max-w-6xl w-full max-h-[90vh] flex flex-col mx-2 sm:mx-4"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -222,7 +222,7 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Générer Devis</h2>
                 <p className="text-sm text-gray-600">
@@ -244,7 +244,7 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
             <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
               
               {/* Formulaire - Stack mobile, side-by-side desktop */}
-              <div className="flex-1 lg:w-2/3 p-4 md:p-6 overflow-y-auto">
+              <div className="flex-1 lg:w-2/3 p-2 sm:p-4 md:p-6 overflow-y-auto">
                 <form onSubmit={handleSendDevis} className="space-y-6">
                   
                   {/* Prestations */}
@@ -372,7 +372,7 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
               </div>
 
               {/* Sidebar Info & Preview - Responsive */}
-              <div className="lg:w-1/3 p-4 md:p-6 border-t lg:border-t-0 lg:border-l border-gray-200 space-y-6">
+              <div className="lg:w-1/3 p-2 sm:p-4 md:p-6 border-t lg:border-t-0 lg:border-l border-gray-200 space-y-6">
                 
                 {/* Infos Lead */}
                 <div>

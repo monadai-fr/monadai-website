@@ -157,7 +157,7 @@ Au plaisir de vous rencontrer,`
         >
           <motion.div
             ref={focusRef}
-            className="bg-white rounded-lg max-w-4xl md:max-w-6xl w-full max-h-[90vh] flex flex-col mx-4"
+            className="bg-white rounded-lg max-w-4xl md:max-w-6xl w-full max-h-[90vh] flex flex-col mx-2 sm:mx-4"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -165,7 +165,7 @@ Au plaisir de vous rencontrer,`
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Contacter le lead</h2>
                 <p className="text-sm text-gray-600">
@@ -198,7 +198,7 @@ Au plaisir de vous rencontrer,`
               {!showPreview ? (
                 <>
                   {/* Formulaire - Stack mobile, side-by-side desktop */}
-                  <div className="flex-1 lg:w-2/3 p-4 md:p-6 space-y-4">
+                  <div className="flex-1 lg:w-2/3 p-2 sm:p-4 md:p-6 space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Objet de l'email
@@ -270,7 +270,7 @@ Au plaisir de vous rencontrer,`
                   </div>
 
                   {/* Templates & Lead Info - Responsive */}
-                  <div className="lg:w-1/3 p-4 md:p-6 border-t lg:border-t-0 lg:border-l border-gray-200 space-y-6">
+                  <div className="lg:w-1/3 p-2 sm:p-4 md:p-6 border-t lg:border-t-0 lg:border-l border-gray-200 space-y-6">
                     
                     {/* Infos Lead */}
                     <div>

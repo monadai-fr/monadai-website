@@ -124,7 +124,7 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
         >
           <motion.div
             ref={focusRef}
-            className="bg-white rounded-lg max-w-xs sm:max-w-2xl md:max-w-4xl w-full max-h-[90vh] flex flex-col mx-4"
+            className="bg-white rounded-lg max-w-xs sm:max-w-2xl md:max-w-4xl w-full max-h-[90vh] flex flex-col mx-2 sm:mx-4"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -132,7 +132,7 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Notes CRM</h2>
                 <p className="text-sm text-gray-600">
@@ -159,7 +159,7 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
             <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
               
               {/* Formulaire nouvelle note - Stack mobile, side desktop */}
-              <div className="md:w-1/3 p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-200">
+              <div className="md:w-1/3 p-2 sm:p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-200">
                 <h3 className="font-semibold text-gray-900 mb-4">Nouvelle note</h3>
                 
                 <form onSubmit={handleAddNote} className="space-y-4">
@@ -215,7 +215,7 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
               </div>
 
               {/* Liste des notes - Responsive */}
-              <div className="flex-1 p-4 md:p-6">
+              <div className="flex-1 p-2 sm:p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                   <h3 className="font-semibold text-gray-900">
                     Historique ({stats.total})
