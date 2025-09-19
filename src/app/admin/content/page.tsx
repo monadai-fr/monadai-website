@@ -23,7 +23,7 @@ export default function AdminContent() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8 w-full max-w-full overflow-x-hidden">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Content Management</h1>
         <p className="text-gray-600">Gestion projets SaaS & contenu MonadAI</p>

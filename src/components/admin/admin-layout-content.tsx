@@ -27,17 +27,19 @@ export default function AdminLayoutContent({
   return (
     <AdminProviders>
       <AdminGuardNextAuth>
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="min-h-screen bg-gray-50 flex w-full overflow-hidden">
           <AdminSidebar 
             isMobileOpen={isMobileSidebarOpen}
             onMobileClose={closeMobileSidebar}
           />
           
-          {/* Main Content - Responsive padding pour éviter collision sidebar */}
-          <div className="flex-1 flex flex-col lg:ml-0">
+          {/* Main Content - Contraintes largeur strictes */}
+          <div className="flex-1 flex flex-col lg:ml-0 min-w-0 w-full">
             <AdminHeader onMobileMenuClick={toggleMobileSidebar} />
-            <main className="flex-1 p-2 sm:p-4 md:p-6">
-              {children}
+            <main className="flex-1 p-2 sm:p-4 md:p-6 min-w-0 w-full overflow-x-hidden">
+              <div className="w-full max-w-full overflow-x-auto">
+                {children}
+              </div>
             </main>
             <AdminFooter />
           </div>

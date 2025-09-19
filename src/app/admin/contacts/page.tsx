@@ -102,7 +102,7 @@ export default function AdminContacts() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8 w-full max-w-full overflow-x-hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">CRM & Lead Management</h1>
@@ -187,8 +187,8 @@ export default function AdminContacts() {
                   </div>
                 </div>
 
-                {/* Actions - Responsive layout */}
-                <div className="flex flex-wrap lg:flex-nowrap items-center gap-2">
+                {/* Actions - Responsive layout avec contraintes */}
+                <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 max-w-full overflow-x-auto">
                   <StatusDropdown 
                     lead={lead}
                     onStatusChange={() => refreshData()}

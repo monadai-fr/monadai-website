@@ -48,7 +48,7 @@ export default function AdminAnalytics() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8 w-full max-w-full overflow-x-hidden">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Business Analytics</h1>
         <p className="text-gray-600">Analyse approfondie performance MonadAI</p>

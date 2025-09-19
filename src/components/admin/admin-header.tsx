@@ -37,15 +37,15 @@ export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 px-2 sm:px-4 md:px-6 py-4">
-      <div className="flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 px-2 sm:px-4 md:px-6 py-4 w-full overflow-hidden">
+      <div className="flex items-center justify-between min-w-0 w-full max-w-full">
         
         {/* Mobile Burger Menu + Page Title */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
           {/* Burger Menu - Visible seulement mobile/tablet */}
           <button
             onClick={onMobileMenuClick}
-            className="lg:hidden p-2 rounded-md text-gray-600 hover:text-green-sapin hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-md text-gray-600 hover:text-green-sapin hover:bg-gray-100 transition-colors flex-shrink-0"
             aria-label="Ouvrir menu navigation"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,24 +54,22 @@ export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
           </button>
 
           {/* Page Title & Breadcrumb */}
-          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 truncate">{getPageTitle(pathname)}</h1>
-              <div className="hidden sm:flex items-center text-sm text-gray-500 mt-1">
-                <Link href="/admin" className="hover:text-green-sapin transition-colors">
-                  Admin
-                </Link>
-                {pathname !== '/admin' && (
-                  <>
-                    <svg className="w-3 h-3 mx-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-gray-900 font-medium">
-                      {getPageTitle(pathname).replace('Dashboard ', '').replace('Business ', '').replace('CRM & ', '').replace('Command ', '').replace(' Management', '')}
-                    </span>
-                  </>
-                )}
-              </div>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 truncate">{getPageTitle(pathname)}</h1>
+            <div className="hidden sm:flex items-center text-sm text-gray-500 mt-1">
+              <Link href="/admin" className="hover:text-green-sapin transition-colors">
+                Admin
+              </Link>
+              {pathname !== '/admin' && (
+                <>
+                  <svg className="w-3 h-3 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-900 font-medium truncate">
+                    {getPageTitle(pathname).replace('Dashboard ', '').replace('Business ', '').replace('CRM & ', '').replace('Command ', '').replace(' Management', '')}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 

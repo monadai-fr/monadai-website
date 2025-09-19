@@ -32,7 +32,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8 w-full max-w-full overflow-x-hidden">
       {/* Header avec actions */}
       <div className="flex items-center justify-between">
         <div>
