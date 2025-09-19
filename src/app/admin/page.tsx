@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useMemo } from 'react'
 import { useAdminData } from '@/hooks/use-admin-data'
 import StatCard from '@/components/admin/stat-card'
 import { formatPrice } from '@/lib/utils'
@@ -11,14 +12,18 @@ export default function AdminDashboard() {
   
   // Dashboard page - SANS LOGIC COMPLEXE
 
-  // Segmentation leads par score
-  const hotLeads = leads.filter(lead => lead.score >= 70)
-  const warmLeads = leads.filter(lead => lead.score >= 40 && lead.score < 70) 
-  const coldLeads = leads.filter(lead => lead.score < 40)
+  // Segmentation leads par score - MEMOIZED pour performance
+  const { hotLeads, warmLeads, coldLeads } = useMemo(() => {
+    return {
+      hotLeads: leads.filter(lead => lead.score >= 70),
+      warmLeads: leads.filter(lead => lead.score >= 40 && lead.score < 70), 
+      coldLeads: leads.filter(lead => lead.score < 40)
+    }
+  }, [leads]) // Re-calcule seulement si leads changent
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {Array.from({ length: 8 }, (_, i) => (
           <StatCard key={i} title="" value="" icon={<></>} loading={true} />
         ))}
@@ -48,9 +53,9 @@ export default function AdminDashboard() {
         </motion.button>
       </div>
 
-      {/* KPIs Principaux */}
+      {/* KPIs Principaux - Mobile-first responsive */}
       <motion.div 
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
         variants={staggerContainer}
         initial="initial"
         animate="animate"

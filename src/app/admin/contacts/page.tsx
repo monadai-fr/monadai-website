@@ -103,9 +103,9 @@ export default function AdminContacts() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">CRM & Lead Management</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">CRM & Lead Management</h1>
           <p className="text-gray-600">Gestion intelligente des prospects MonadAI</p>
         </div>
 
@@ -158,32 +158,37 @@ export default function AdminContacts() {
               onClick={() => setSelectedLead(selectedLead === lead.id ? null : lead.id)}
               whileHover={{ x: 2 }}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center mb-2">
-                    <h4 className="font-medium text-gray-900 mr-3">{lead.name}</h4>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${getScoreColor(lead.score)}`}>
+              {/* Layout responsive mobile/desktop */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex-1 min-w-0"> {/* min-w-0 pour éviter débordement */}
+                  {/* Header avec nom et badges */}
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <h4 className="font-medium text-gray-900 truncate">{lead.name}</h4>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap ${getScoreColor(lead.score)}`}>
                       {getScoreLabel(lead.score)} ({lead.score})
                     </span>
                     {lead.company && (
-                      <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full whitespace-nowrap">
                         {lead.company}
                       </span>
                     )}
                   </div>
                   
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <span>{lead.email}</span>
-                    <span>•</span>
-                    <span>{lead.service}</span>
-                    <span>•</span>
-                    <span>{lead.budget}</span>
-                    <span>•</span>
-                    <span>{new Date(lead.created_at).toLocaleDateString('fr-FR')}</span>
+                  {/* Infos détaillées - Stack mobile, inline desktop */}
+                  <div className="space-y-1 md:space-y-0">
+                    <div className="text-sm text-gray-600 truncate">{lead.email}</div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                      <span>{lead.service}</span>
+                      <span className="hidden md:inline">•</span>
+                      <span>{lead.budget}</span>  
+                      <span className="hidden md:inline">•</span>
+                      <span>{new Date(lead.created_at).toLocaleDateString('fr-FR')}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                {/* Actions - Responsive layout */}
+                <div className="flex flex-wrap lg:flex-nowrap items-center gap-2">
                   <StatusDropdown 
                     lead={lead}
                     onStatusChange={() => refreshData()}

@@ -6,7 +6,11 @@ import { usePathname } from 'next/navigation'
 import { useAdminData } from '@/hooks/use-admin-data'
 import Link from 'next/link'
 
-export default function AdminHeader() {
+interface AdminHeaderProps {
+  onMobileMenuClick?: () => void
+}
+
+export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
   const { data: session } = useSession()
   const pathname = usePathname()
   const { businessMetrics, securityMetrics, refreshData, loading } = useAdminData()
@@ -33,14 +37,27 @@ export default function AdminHeader() {
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-4">
       <div className="flex items-center justify-between">
         
-        {/* Page Title & Breadcrumb */}
-        <div className="flex items-center space-x-4">
+        {/* Mobile Burger Menu + Page Title */}
+        <div className="flex items-center space-x-3">
+          {/* Burger Menu - Visible seulement mobile/tablet */}
+          <button
+            onClick={onMobileMenuClick}
+            className="lg:hidden p-2 rounded-md text-gray-600 hover:text-green-sapin hover:bg-gray-100 transition-colors"
+            aria-label="Ouvrir menu navigation"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          {/* Page Title & Breadcrumb */}
+          <div className="flex items-center space-x-4">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{getPageTitle(pathname)}</h1>
-            <div className="flex items-center text-sm text-gray-500 mt-1">
+            <h1 className="text-lg md:text-xl font-bold text-gray-900">{getPageTitle(pathname)}</h1>
+            <div className="hidden sm:flex items-center text-sm text-gray-500 mt-1">
               <Link href="/admin" className="hover:text-green-sapin transition-colors">
                 Admin
               </Link>
@@ -57,9 +74,9 @@ export default function AdminHeader() {
             </div>
           </div>
 
-          {/* Live Metrics */}
+          {/* Live Metrics - Responsive breakpoints */}
           {!loading && businessMetrics && (
-            <div className="hidden xl:flex items-center space-x-4 ml-8">
+            <div className="hidden 2xl:flex items-center space-x-4 ml-8">
               <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                 <svg className="w-4 h-4 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

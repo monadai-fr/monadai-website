@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react'
 
 const navigation = [
   {
@@ -32,11 +33,23 @@ const navigation = [
   }
 ]
 
-export default function AdminSidebar() {
+interface AdminSidebarProps {
+  isMobileOpen?: boolean
+  onMobileClose?: () => void
+}
+
+export default function AdminSidebar({ isMobileOpen = false, onMobileClose }: AdminSidebarProps = {}) {
   const pathname = usePathname()
 
-  return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+  // Fermer sidebar mobile sur changement de route
+  useEffect(() => {
+    if (isMobileOpen && onMobileClose) {
+      onMobileClose()
+    }
+  }, [pathname])
+
+  const sidebarContent = (
+    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
       {/* Logo Admin */}
       <div className="p-6 border-b border-gray-200">
         <Link href="/admin" className="flex items-center">
@@ -90,5 +103,42 @@ export default function AdminSidebar() {
         </Link>
       </div>
     </div>
+  )
+
+  return (
+    <>
+      {/* Desktop Sidebar - Hidden on mobile/tablet */}
+      <div className="hidden lg:block">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile/Tablet Overlay + Sidebar */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={onMobileClose}
+            />
+            
+            {/* Mobile Sidebar */}
+            <motion.div
+              className="fixed left-0 top-0 bottom-0 z-50 lg:hidden"
+              initial={{ x: -256 }}
+              animate={{ x: 0 }}
+              exit={{ x: -256 }}
+              transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
+            >
+              {sidebarContent}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

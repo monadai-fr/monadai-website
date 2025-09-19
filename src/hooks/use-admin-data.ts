@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getGTMAnalytics } from '@/lib/gtm-analytics'
 
@@ -46,9 +46,10 @@ export function useAdminData() {
   const [loading, setLoading] = useState(true)
   
   const initRef = useRef(false)
+  const lastFetchRef = useRef<number>(0) // Cache simple : timestamp dernière requête
 
-  // Calcul lead scoring automatique
-  const calculateLeadScore = (lead: any): number => {
+  // Calcul lead scoring automatique - MEMOIZED pour performance
+  const calculateLeadScore = useCallback((lead: any): number => {
     let score = 0
     
     // Budget élevé = +30 points
@@ -70,15 +71,15 @@ export function useAdminData() {
     if (lead.phone) score += 10
     
     return Math.min(score, 100)
-  }
+  }, []) // Stable function, pas de dépendances
 
-  // Récupération données business
-  const fetchBusinessMetrics = async () => {
+  // Récupération données business - OPTIMIZED SELECT
+  const fetchBusinessMetrics = useCallback(async () => {
     try {
-      // Contacts dernières 24h avec fallback intelligent
+      // Contacts dernières 24h avec fallback intelligent - SELECT optimisé
       const { data: contacts24h, error: error24h } = await supabase
         .from('contacts')
-        .select('*')
+        .select('id, created_at, budget, timeline') // Colonnes minimales pour métriques
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
 
       // Si pas de contacts 24h, prendre les plus récents pour avoir des métriques
@@ -86,7 +87,7 @@ export function useAdminData() {
       if ((!contacts24h || contacts24h.length === 0) && !error24h) {
         const { data: recentContacts } = await supabase
           .from('contacts')
-          .select('*')
+          .select('id, created_at, budget, timeline') // SELECT optimisé
           .order('created_at', { ascending: false })
           .limit(10)
         contactsToUse = recentContacts
@@ -141,10 +142,10 @@ export function useAdminData() {
         avgTicket: 0
       })
     }
-  }
+  }, []) // Fermeture useCallback pour fetchBusinessMetrics
 
   // Récupération données sécurité
-  const fetchSecurityMetrics = async () => {
+  const fetchSecurityMetrics = useCallback(async () => {
     try {
       const { data: securityLogs, error } = await supabase
         .from('security_logs')
@@ -192,14 +193,14 @@ export function useAdminData() {
         suspiciousIPs: []
       })
     }
-  }
+  }, []) // Fonction stable sans dépendances
 
-  // Récupération leads avec scoring
-  const fetchLeads = async () => {
+  // Récupération leads avec scoring - MEMOIZED & OPTIMIZED SELECT
+  const fetchLeads = useCallback(async () => {
     try {
       const { data: contacts, error } = await supabase
         .from('contacts')
-        .select('*')
+        .select('id, name, email, company, phone, service, budget, timeline, message, created_at, status, notes, last_contacted') // Colonnes spécifiques pour CRM
         .order('created_at', { ascending: false })
         .limit(50)
 
@@ -217,11 +218,20 @@ export function useAdminData() {
     } catch (error) {
       setLeads([])
     }
-  }
+  }, [calculateLeadScore]) // Dépendance sur calculateLeadScore memoized
 
-  // Refresh données - SIMPLE SANS LOOP
-  const refreshData = async () => {
+  // Refresh données - MEMOIZED avec cache simple
+  const refreshData = useCallback(async () => {
+    const now = Date.now()
+    
+    // Cache simple : éviter refresh < 30 secondes
+    if (now - lastFetchRef.current < 30000) {
+      return // Skip si refresh récent
+    }
+    
+    lastFetchRef.current = now
     setLoading(true)
+    
     try {
       await Promise.all([
         fetchBusinessMetrics(),
@@ -229,10 +239,11 @@ export function useAdminData() {
         fetchLeads()
       ])
     } catch (error) {
+      console.warn('Erreur refresh admin data:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [fetchBusinessMetrics, fetchSecurityMetrics, fetchLeads])
 
   // Init SIMPLE - Contacts et leads seulement
   useEffect(() => {

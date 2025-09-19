@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { staggerContainer, staggerItem } from '@/lib/motion-variants'
 import StatCard from '@/components/admin/stat-card'
@@ -45,33 +45,44 @@ export default function AdminSecurity() {
   useEffect(() => {
     fetchSecurityLogs()
     
-    // Refresh auto toutes les 10 secondes pour security
-    const interval = setInterval(fetchSecurityLogs, 10000)
+    // Refresh auto 1 minute pour security (moins agressif que 10s)
+    const interval = setInterval(fetchSecurityLogs, 60000) // 60 secondes au lieu de 10
     return () => clearInterval(interval)
   }, [])
 
-  // Analyse des logs pour métriques
-  const last24h = securityLogs.filter(log => 
-    new Date(log.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
-  )
+  // Analyse des logs pour métriques - MEMOIZED pour performance
+  const { last24h, rateLimitHits, spamBlocked, botsDetected, topMaliciousIPs, threatLevel } = useMemo(() => {
+    const filtered24h = securityLogs.filter(log => 
+      new Date(log.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+    )
 
-  const rateLimitHits = last24h.filter(log => log.event_type === 'rate_limit').length
-  const spamBlocked = last24h.filter(log => log.event_type === 'spam_detected').length  
-  const botsDetected = last24h.filter(log => log.event_type === 'form_blocked').length
+    const rateLimit = filtered24h.filter(log => log.event_type === 'rate_limit').length
+    const spam = filtered24h.filter(log => log.event_type === 'spam_detected').length  
+    const bots = filtered24h.filter(log => log.event_type === 'form_blocked').length
 
-  // Top IPs malveillantes
-  const ipCounts = last24h.reduce((acc: any, log) => {
-    acc[log.ip_address] = (acc[log.ip_address] || 0) + 1
-    return acc
-  }, {})
-  
-  const topMaliciousIPs = Object.entries(ipCounts)
-    .filter(([ip, count]) => (count as number) > 2)
-    .sort(([, a], [, b]) => (b as number) - (a as number))
-    .slice(0, 5)
+    // Top IPs malveillantes
+    const ipCounts = filtered24h.reduce((acc: any, log) => {
+      acc[log.ip_address] = (acc[log.ip_address] || 0) + 1
+      return acc
+    }, {})
+    
+    const maliciousIPs = Object.entries(ipCounts)
+      .filter(([, count]) => (count as number) > 2)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .slice(0, 5)
 
-  const threatLevel = topMaliciousIPs.length > 3 ? 'high' : 
-                    topMaliciousIPs.length > 1 ? 'medium' : 'low'
+    const level = maliciousIPs.length > 3 ? 'high' : 
+                  maliciousIPs.length > 1 ? 'medium' : 'low'
+
+    return {
+      last24h: filtered24h,
+      rateLimitHits: rateLimit,
+      spamBlocked: spam,
+      botsDetected: bots,
+      topMaliciousIPs: maliciousIPs,
+      threatLevel: level
+    }
+  }, [securityLogs]) // Re-calcule seulement si securityLogs changent
 
   if (loading) {
     return (
