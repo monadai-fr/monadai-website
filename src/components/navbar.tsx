@@ -24,7 +24,7 @@ export default function Navbar() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
-      <nav className="mx-auto max-w-7xl px-6 lg:px-8" aria-label="Navigation principale">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Navigation principale">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <motion.div 

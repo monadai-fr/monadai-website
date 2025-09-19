@@ -214,7 +214,7 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
         >
           <motion.div
             ref={focusRef}
-            className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] flex flex-col"
+            className="bg-white rounded-lg max-w-4xl md:max-w-6xl w-full max-h-[90vh] flex flex-col mx-4"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -240,11 +240,11 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
               </button>
             </div>
 
-            {/* Corps */}
-            <div className="flex-1 overflow-hidden flex">
+            {/* Corps - Layout responsive */}
+            <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
               
-              {/* Formulaire */}
-              <div className="w-2/3 p-6 overflow-y-auto">
+              {/* Formulaire - Stack mobile, side-by-side desktop */}
+              <div className="flex-1 lg:w-2/3 p-4 md:p-6 overflow-y-auto">
                 <form onSubmit={handleSendDevis} className="space-y-6">
                   
                   {/* Prestations */}
@@ -371,8 +371,8 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                 </form>
               </div>
 
-              {/* Sidebar Info & Preview */}
-              <div className="w-1/3 p-6 border-l border-gray-200 space-y-6">
+              {/* Sidebar Info & Preview - Responsive */}
+              <div className="lg:w-1/3 p-4 md:p-6 border-t lg:border-t-0 lg:border-l border-gray-200 space-y-6">
                 
                 {/* Infos Lead */}
                 <div>
