@@ -55,22 +55,23 @@ export default function AdminHeader({ onMobileMenuClick }: AdminHeaderProps) {
 
           {/* Page Title & Breadcrumb */}
           <div className="flex items-center space-x-4">
-          <div>
-            <h1 className="text-lg md:text-xl font-bold text-gray-900">{getPageTitle(pathname)}</h1>
-            <div className="hidden sm:flex items-center text-sm text-gray-500 mt-1">
-              <Link href="/admin" className="hover:text-green-sapin transition-colors">
-                Admin
-              </Link>
-              {pathname !== '/admin' && (
-                <>
-                  <svg className="w-3 h-3 mx-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-gray-900 font-medium">
-                    {getPageTitle(pathname).replace('Dashboard ', '').replace('Business ', '').replace('CRM & ', '').replace('Command ', '').replace(' Management', '')}
-                  </span>
-                </>
-              )}
+            <div>
+              <h1 className="text-lg md:text-xl font-bold text-gray-900">{getPageTitle(pathname)}</h1>
+              <div className="hidden sm:flex items-center text-sm text-gray-500 mt-1">
+                <Link href="/admin" className="hover:text-green-sapin transition-colors">
+                  Admin
+                </Link>
+                {pathname !== '/admin' && (
+                  <>
+                    <svg className="w-3 h-3 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-gray-900 font-medium">
+                      {getPageTitle(pathname).replace('Dashboard ', '').replace('Business ', '').replace('CRM & ', '').replace('Command ', '').replace(' Management', '')}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
