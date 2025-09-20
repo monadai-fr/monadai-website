@@ -190,54 +190,85 @@ export default function AdminContacts() {
                   </div>
                 </div>
 
-                {/* Actions - Responsive layout avec contraintes */}
-                <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 max-w-full flex-shrink-0">
-                  <StatusDropdown 
-                    lead={lead}
-                    onStatusChange={() => refreshData()}
-                  />
-                  
-                  <div className="w-px h-6 bg-gray-300"></div>
-                  
-                  <div className="flex items-center gap-2">
-                  <motion.button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      openContactModal(lead)
-                    }}
-                    className="bg-green-100 text-green-700 px-3 py-1 rounded text-xs font-medium hover:bg-green-200 transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Contacter
-                  </motion.button>
-                  
-                  <motion.button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      openDevisModal(lead)
-                    }}
-                    className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-medium hover:bg-blue-200 transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Devis
-                  </motion.button>
+                {/* Actions CRM - Box moderne unifiée */}
+                <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    {/* Status Dropdown */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-600">Status:</span>
+                      <StatusDropdown 
+                        lead={lead}
+                        onStatusChange={() => refreshData()}
+                      />
+                    </div>
+                    
+                    {/* Séparateur */}
+                    <div className="hidden sm:block w-px h-6 bg-gray-300"></div>
+                    
+                    {/* Actions Principales - Grid responsive */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 flex-1">
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openContactModal(lead)
+                        }}
+                        className="bg-green-sapin text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-green-sapin-light transition-colors flex items-center justify-center gap-1"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span className="hidden sm:inline">Email</span>
+                      </motion.button>
+                      
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openDevisModal(lead)
+                        }}
+                        className="bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="hidden sm:inline">Devis</span>
+                      </motion.button>
 
-                  <motion.button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      openNotesModal(lead)
-                    }}
-                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    title="Gérer les notes"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </motion.button>
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openNotesModal(lead)
+                        }}
+                        className="bg-amber-600 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-amber-700 transition-colors flex items-center justify-center gap-1"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        title="Gérer les notes"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span className="hidden sm:inline">Notes</span>
+                      </motion.button>
+
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteLead(lead)
+                        }}
+                        className="bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-1"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        title="Supprimer définitivement ce lead"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span className="hidden sm:inline">Supprimer</span>
+                      </motion.button>
+                    </div>
                   </div>
                 </div>
               </div>

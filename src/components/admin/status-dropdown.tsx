@@ -1,7 +1,8 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import type { LeadData } from '@/hooks/use-admin-data'
 
 interface StatusDropdownProps {
@@ -62,9 +63,22 @@ type LeadStatus = keyof typeof STATUS_CONFIG
 export default function StatusDropdown({ lead, onStatusChange }: StatusDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [updating, setUpdating] = useState(false)
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   const currentStatus = (lead.status || 'new') as LeadStatus
   const currentConfig = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.new
+
+  // Calculer position dropdown pour portal
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.right + window.scrollX - 160 // 160px = largeur dropdown
+      })
+    }
+  }, [isOpen])
 
   const handleStatusChange = async (newStatus: LeadStatus) => {
     if (newStatus === currentStatus || updating) return
@@ -98,6 +112,7 @@ export default function StatusDropdown({ lead, onStatusChange }: StatusDropdownP
   return (
     <div className="relative">
       <motion.button
+        ref={buttonRef}
         onClick={(e) => {
           e.stopPropagation() // Empêche la propagation vers le lead row
           setIsOpen(!isOpen)
@@ -123,26 +138,32 @@ export default function StatusDropdown({ lead, onStatusChange }: StatusDropdownP
         )}
       </motion.button>
 
-      <AnimatePresence>
-        {isOpen && !updating && (
-          <>
-            {/* Overlay pour fermer - Z-index juste en-dessous du dropdown */}
-            <div
-              className="fixed inset-0 z-40"
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsOpen(false)
-              }}
-            />
-            
-            {/* Menu dropdown - Z-index élevé pour passer par-dessus le contenu expandé */}
-            <motion.div
-              className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-            >
+      {/* Portal dropdown pour éviter container lead */}
+      {typeof window !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isOpen && !updating && (
+            <>
+              {/* Overlay pour fermer */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsOpen(false)
+                }}
+              />
+              
+              {/* Menu dropdown - Portal hors container lead */}
+              <motion.div
+                className="fixed w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                style={{
+                  top: dropdownPosition.top,
+                  left: dropdownPosition.left
+                }}
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
               {Object.entries(STATUS_CONFIG).map(([status, config]) => (
                 <motion.button
                   key={status}
@@ -165,10 +186,12 @@ export default function StatusDropdown({ lead, onStatusChange }: StatusDropdownP
                   )}
                 </motion.button>
               ))}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   )
 }

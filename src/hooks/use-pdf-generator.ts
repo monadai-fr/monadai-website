@@ -61,6 +61,9 @@ export function usePDFGenerator() {
     setGenerating(true)
     setError(null)
 
+    let tempDiv: HTMLDivElement | null = null
+    let canvas: HTMLCanvasElement | null = null
+
     try {
       // Dynamic imports pour éviter impact bundle (Cursor Rules performance)
       const [
@@ -73,87 +76,113 @@ export function usePDFGenerator() {
 
       const finalConfig = { ...defaultConfig, ...config }
 
-      // Créer élément temporaire avec HTML pour capture
-      const tempDiv = document.createElement('div')
+      // Créer élément temporaire avec HTML pour capture - MEMORY SAFE
+      tempDiv = document.createElement('div')
       tempDiv.innerHTML = htmlContent
-      tempDiv.style.position = 'absolute'
-      tempDiv.style.left = '-9999px'
-      tempDiv.style.top = '-9999px'
-      tempDiv.style.width = '800px' // Largeur fixe pour cohérence
-      tempDiv.style.backgroundColor = '#ffffff'
-      tempDiv.style.padding = '30px'
+      tempDiv.style.cssText = `
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+        width: 800px;
+        background-color: #ffffff;
+        padding: 30px;
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+      `
       
       document.body.appendChild(tempDiv)
 
-      // Capture HTML en canvas avec qualité optimisée
-      const canvas = await html2canvas(tempDiv, {
-        scale: finalConfig.scale,
+      // Attendre rendu DOM
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Capture HTML en canvas avec qualité optimisée - MEMORY SAFE
+      canvas = await html2canvas(tempDiv, {
+        scale: 2, // Plus haute résolution pour éviter flou
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         width: 800,
         height: tempDiv.scrollHeight,
         scrollX: 0,
-        scrollY: 0
+        scrollY: 0,
+        windowWidth: 800,
+        windowHeight: tempDiv.scrollHeight,
+        removeContainer: true // Cleanup automatique
       })
 
-      // Nettoyer DOM
-      document.body.removeChild(tempDiv)
-
-      // Dimensions PDF
-      const imgWidth = finalConfig.format === 'A4' ? 210 : 297 // mm
-      const pageHeight = finalConfig.format === 'A4' ? 297 : 210 // mm
+      // Dimensions PDF optimisées
+      const imgWidth = 210 // A4 width en mm
+      const pageHeight = 297 // A4 height en mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width
       
-      // Créer PDF
+      // Créer PDF avec compression
       const pdf = new jsPDF({
-        orientation: finalConfig.orientation,
+        orientation: 'portrait',
         unit: 'mm',
-        format: finalConfig.format
+        format: 'a4',
+        compress: true // Compression pour taille optimale
       })
 
-      // Ajouter marges
+      // Marges et dimensions content
       const marginTop = finalConfig.margins.top
       const marginLeft = finalConfig.margins.left
       const contentWidth = imgWidth - finalConfig.margins.left - finalConfig.margins.right
-      const contentHeight = imgHeight
+      const effectivePageHeight = pageHeight - marginTop - finalConfig.margins.bottom
 
-      // Si contenu trop grand, gérer multi-pages
-      let remainingHeight = contentHeight
-      let position = 0
+      // Gestion multi-pages intelligente - éviter coupures
+      if (imgHeight <= effectivePageHeight) {
+        // Une seule page
+        const imgData = canvas.toDataURL('image/jpeg', finalConfig.quality)
+        pdf.addImage(imgData, 'JPEG', marginLeft, marginTop, contentWidth, imgHeight)
+      } else {
+        // Multi-pages avec gestion coupures
+        let currentY = 0
+        let pageNumber = 0
 
-      while (remainingHeight > 0) {
-        const pageContentHeight = Math.min(remainingHeight, pageHeight - marginTop - finalConfig.margins.bottom)
-        
-        if (position > 0) {
-          pdf.addPage()
+        while (currentY < imgHeight) {
+          if (pageNumber > 0) {
+            pdf.addPage()
+          }
+
+          const remainingHeight = imgHeight - currentY
+          const pageContentHeight = Math.min(remainingHeight, effectivePageHeight)
+
+          // Canvas pour cette page seulement
+          const pageCanvas = document.createElement('canvas')
+          const ctx = pageCanvas.getContext('2d')
+          
+          if (ctx) {
+            pageCanvas.width = canvas.width
+            pageCanvas.height = (pageContentHeight * canvas.width) / contentWidth
+            
+            // Fond blanc pour éviter bloc noir
+            ctx.fillStyle = '#ffffff'
+            ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height)
+            
+            ctx.drawImage(
+              canvas,
+              0, (currentY * canvas.width) / contentWidth, // Source Y
+              canvas.width, pageCanvas.height, // Source dimensions
+              0, 0, // Destination
+              pageCanvas.width, pageCanvas.height // Destination dimensions
+            )
+
+            const imgData = pageCanvas.toDataURL('image/jpeg', finalConfig.quality)
+            pdf.addImage(imgData, 'JPEG', marginLeft, marginTop, contentWidth, pageContentHeight)
+          }
+
+          currentY += pageContentHeight
+          pageNumber++
+
+          // Sécurité : max 10 pages
+          if (pageNumber >= 10) break
         }
-
-        // Canvas pour cette page
-        const pageCanvas = document.createElement('canvas')
-        const ctx = pageCanvas.getContext('2d')
-        
-        pageCanvas.width = canvas.width
-        pageCanvas.height = (pageContentHeight * canvas.width) / contentWidth
-        
-        ctx?.drawImage(
-          canvas,
-          0, (position * canvas.width) / contentWidth, // Source
-          canvas.width, pageCanvas.height, // Source size
-          0, 0, // Destination  
-          pageCanvas.width, pageCanvas.height // Destination size
-        )
-
-        const imgData = pageCanvas.toDataURL('image/jpeg', finalConfig.quality)
-        pdf.addImage(imgData, 'JPEG', marginLeft, marginTop, contentWidth, pageContentHeight)
-
-        remainingHeight -= pageContentHeight
-        position += pageContentHeight
       }
 
       // Générer résultats
       const pdfBlob = pdf.output('blob')
-      const pdfBase64 = pdf.output('datauristring').split(',')[1] // Enlever "data:application/pdf;base64,"
+      const pdfBase64 = pdf.output('datauristring').split(',')[1] // Enlever prefix
       const pdfUrl = URL.createObjectURL(pdfBlob)
 
       return {
@@ -167,6 +196,13 @@ export function usePDFGenerator() {
       setError('Impossible de générer le PDF. Veuillez réessayer.')
       return null
     } finally {
+      // MEMORY CLEANUP forcé
+      if (tempDiv && document.body.contains(tempDiv)) {
+        document.body.removeChild(tempDiv)
+      }
+      if (canvas) {
+        canvas.remove()
+      }
       setGenerating(false)
     }
   }, [])
