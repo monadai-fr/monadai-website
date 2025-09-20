@@ -156,7 +156,7 @@ export default function AdminContacts() {
                 selectedLead === lead.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
               }`}
               onClick={() => setSelectedLead(selectedLead === lead.id ? null : lead.id)}
-              whileHover={{ x: 2 }}
+              whileHover={{ scale: 1.005 }}
             >
               {/* Layout responsive mobile/desktop */}
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -188,7 +188,7 @@ export default function AdminContacts() {
                 </div>
 
                 {/* Actions - Responsive layout avec contraintes */}
-                <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 max-w-full overflow-x-auto">
+                <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 max-w-full flex-shrink-0">
                   <StatusDropdown 
                     lead={lead}
                     onStatusChange={() => refreshData()}
@@ -196,7 +196,7 @@ export default function AdminContacts() {
                   
                   <div className="w-px h-6 bg-gray-300"></div>
                   
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2">
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -231,7 +231,9 @@ export default function AdminContacts() {
                     whileTap={{ scale: 0.95 }}
                     title="Gérer les notes"
                   >
-                    📝
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
                   </motion.button>
                   </div>
                 </div>
@@ -291,7 +293,7 @@ export default function AdminContacts() {
                       </div>
                       
                       <div className="flex items-center justify-between">
-                        <div className="flex space-x-2">
+                        <div className="flex gap-3">
                           <motion.button
                             onClick={() => openContactModal(lead)}
                             className="bg-green-sapin text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-sapin-light transition-colors flex items-center space-x-2"

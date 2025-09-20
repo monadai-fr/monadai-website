@@ -34,6 +34,20 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
   const [editContent, setEditContent] = useState('')
 
   const focusRef = useFocusTrap(isOpen)
+  
+  // Empêcher scroll background quand modal ouverte
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    
+    // Cleanup au unmount
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   // Reset formulaire à l'ouverture
   useEffect(() => {
@@ -158,8 +172,8 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
             {/* Corps scrollable */}
             <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
               
-              {/* Formulaire nouvelle note - Stack mobile, side desktop */}
-              <div className="md:w-1/3 p-2 sm:p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-200">
+              {/* Formulaire nouvelle note - Stack mobile, side desktop + Scrollable */}
+              <div className="md:w-1/3 p-2 sm:p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto max-h-[calc(90vh-120px)]">
                 <h3 className="font-semibold text-gray-900 mb-4">Nouvelle note</h3>
                 
                 <form onSubmit={handleAddNote} className="space-y-4">

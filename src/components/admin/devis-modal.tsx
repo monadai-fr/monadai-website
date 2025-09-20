@@ -23,8 +23,23 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
   
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
 
   const focusRef = useFocusTrap(isOpen)
+  
+  // Empêcher scroll background quand modal ouverte
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    
+    // Cleanup au unmount
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   // Pré-remplissage intelligente selon le service
   useEffect(() => {
@@ -230,21 +245,32 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                 </p>
               </div>
 
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                >
+                  {showPreview ? 'Édition' : 'Aperçu'}
+                </button>
+                
+                <button
+                  onClick={onClose}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {/* Corps - Layout responsive */}
             <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
               
-              {/* Formulaire - Stack mobile, side-by-side desktop */}
-              <div className="flex-1 lg:w-2/3 p-2 sm:p-4 md:p-6 overflow-y-auto">
+              {!showPreview ? (
+                <>
+                {/* Formulaire - Stack mobile, side-by-side desktop */}
+                <div className="flex-1 lg:w-2/3 p-2 sm:p-4 md:p-6 overflow-y-auto">
                 <form onSubmit={handleSendDevis} className="space-y-6">
                   
                   {/* Prestations */}
@@ -369,15 +395,15 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                     </motion.button>
                   </div>
                 </form>
-              </div>
+                </div>
 
-              {/* Sidebar Info & Preview - Responsive */}
-              <div className="lg:w-1/3 p-2 sm:p-4 md:p-6 border-t lg:border-t-0 lg:border-l border-gray-200 space-y-6">
+                {/* Sidebar Info & Preview - Responsive + Scrollable */}
+                <div className="lg:w-1/3 p-2 sm:p-4 md:p-6 border-t lg:border-t-0 lg:border-l border-gray-200 space-y-6 overflow-y-auto max-h-[calc(90vh-120px)]">
                 
                 {/* Infos Lead */}
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-3">Infos Client</h3>
-                  <div className="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-2 text-sm text-gray-900">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Nom:</span>
                       <span className="font-medium">{lead.name}</span>
@@ -415,7 +441,7 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                 {/* Calculs en temps réel */}
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-3">Calculs Devis</h3>
-                  <div className="bg-green-50 rounded-lg p-3 space-y-2 text-sm">
+                  <div className="bg-green-50 rounded-lg p-3 space-y-2 text-sm text-gray-900">
                     <div className="flex justify-between">
                       <span className="text-gray-700">Prix HT:</span>
                       <span className="font-medium">{prixHT.toLocaleString('fr-FR')} €</span>
@@ -444,7 +470,12 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
 
                 {/* Instructions */}
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">📋 Instructions</h3>
+                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    Instructions
+                  </h3>
                   <div className="text-sm text-gray-600 space-y-2">
                     <p>• Le devis sera envoyé automatiquement par email</p>
                     <p>• Le status du lead passera en "Devisé"</p>
@@ -453,7 +484,99 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                     <p>• Format: HTML professionnel en pièce jointe</p>
                   </div>
                 </div>
-              </div>
+                </div>
+                </>
+              ) : (
+                /* Aperçu Devis HTML */
+                <div className="flex-1 p-6">
+                  <div className="h-full overflow-y-auto">
+                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                      <h3 className="font-semibold text-gray-900 mb-3">Aperçu du devis HTML</h3>
+                      <div className="bg-white rounded border p-4 text-sm">
+                        <div className="border-b border-gray-200 pb-3 mb-4">
+                          <p><strong>De:</strong> MonadAI &lt;raph@monadai.fr&gt;</p>
+                          <p><strong>À:</strong> {lead.name} &lt;{lead.email}&gt;</p>
+                          <p><strong>Objet:</strong> Devis DEV-2024-{String(Date.now()).slice(-6)} - MonadAI</p>
+                          <p><strong>Pièce jointe:</strong> Devis-MonadAI.html</p>
+                        </div>
+                        
+                        {/* Aperçu HTML miniature */}
+                        <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '12px', lineHeight: '1.4' }}>
+                          {/* Header */}
+                          <div style={{ background: 'linear-gradient(135deg, #1B4332 0%, #2D5A3D 100%)', padding: '15px', textAlign: 'center', borderRadius: '4px 4px 0 0', color: 'white' }}>
+                            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>MonadAI</div>
+                            <div style={{ fontSize: '10px', opacity: '0.8' }}>Solutions Web & IA sur mesure</div>
+                          </div>
+
+                          {/* Content preview */}
+                          <div style={{ padding: '15px', background: '#ffffff', border: '1px solid #e5e7eb' }}>
+                            <h2 style={{ color: '#1B4332', margin: '0 0 10px 0', fontSize: '14px' }}>
+                              Bonjour {lead.name.split(' ')[0]} 👋
+                            </h2>
+                            
+                            <p style={{ margin: '0 0 15px 0', fontSize: '11px', color: '#374151' }}>
+                              Merci pour votre intérêt pour nos services. Vous trouverez le devis détaillé en pièce jointe.
+                            </p>
+
+                            {/* Résumé devis */}
+                            <div style={{ background: '#F0FDF4', borderLeft: '3px solid #1B4332', padding: '10px', margin: '10px 0', borderRadius: '0 4px 4px 0' }}>
+                              <h3 style={{ color: '#1B4332', margin: '0 0 8px 0', fontSize: '12px' }}>
+                                <svg style={{ display: 'inline-block', width: '12px', height: '12px', marginRight: '4px' }} fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                                </svg>
+                                Récapitulatif
+                              </h3>
+                              <div style={{ fontSize: '10px', color: '#374151' }}>
+                                <p style={{ margin: '0 0 4px 0' }}><strong>Service:</strong> {
+                                  lead.service === 'web' ? 'Développement Web' :
+                                  lead.service === 'ia' ? 'Automatisation IA' :
+                                  lead.service === 'transformation' ? 'Transformation Digitale' :
+                                  lead.service === 'audit' ? 'Audit Technique' : 'Service personnalisé'
+                                }</p>
+                                <p style={{ margin: '0 0 4px 0' }}><strong>Prix HT:</strong> {prixHT.toLocaleString('fr-FR')} €</p>
+                                <p style={{ margin: '0 0 4px 0' }}><strong>Prix TTC:</strong> {prixTTC.toLocaleString('fr-FR')} €</p>
+                                <p style={{ margin: '0' }}><strong>Acompte (40%):</strong> {acompte40.toLocaleString('fr-FR')} €</p>
+                              </div>
+                            </div>
+
+                            {/* Prestations preview */}
+                            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '10px', borderRadius: '4px', margin: '10px 0' }}>
+                              <h4 style={{ margin: '0 0 5px 0', fontSize: '11px', fontWeight: 'bold' }}>
+                                <svg style={{ display: 'inline-block', width: '11px', height: '11px', marginRight: '4px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Prestations proposées
+                              </h4>
+                              <div style={{ fontSize: '9px', color: '#6b7280', maxHeight: '60px', overflow: 'hidden' }}>
+                                {formData.prestations.slice(0, 200)}...
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Footer */}
+                          <div style={{ background: '#F9FAFB', padding: '10px', borderTop: '1px solid #E5E7EB', textAlign: 'center', fontSize: '9px', color: '#6b7280' }}>
+                            <strong>Raphael LOTTE</strong> - Fondateur MonadAI<br/>
+                            📞 06 47 24 48 09 • ✉️ raph@monadai.fr
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-amber-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div className="text-sm text-amber-800">
+                            <strong>Format HTML :</strong> Le devis est généré en HTML stylisé et envoyé en pièce jointe. 
+                            Pour un PDF, le client peut imprimer ou utiliser "Enregistrer en PDF" de son navigateur.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         </motion.div>

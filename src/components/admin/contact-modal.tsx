@@ -20,6 +20,20 @@ export default function ContactModal({ isOpen, onClose, lead, onSuccess }: Conta
   const [error, setError] = useState<string | null>(null)
 
   const focusRef = useFocusTrap(isOpen)
+  
+  // Empêcher scroll background quand modal ouverte
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    
+    // Cleanup au unmount
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   // Génération automatique objet email
   useEffect(() => {
@@ -269,13 +283,13 @@ Au plaisir de vous rencontrer,`
                     </div>
                   </div>
 
-                  {/* Templates & Lead Info - Responsive */}
-                  <div className="lg:w-1/3 p-2 sm:p-4 md:p-6 border-t lg:border-t-0 lg:border-l border-gray-200 space-y-6">
+                  {/* Templates & Lead Info - Responsive + Scrollable */}
+                  <div className="lg:w-1/3 p-2 sm:p-4 md:p-6 border-t lg:border-t-0 lg:border-l border-gray-200 space-y-6 overflow-y-auto max-h-[calc(90vh-120px)]">
                     
                     {/* Infos Lead */}
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-3">Infos Lead</h3>
-                      <div className="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
+                      <div className="bg-gray-50 rounded-lg p-3 space-y-2 text-sm text-gray-900">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Nom:</span>
                           <span className="font-medium">{lead.name}</span>
