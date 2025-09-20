@@ -10,7 +10,6 @@ import StatusDropdown from '@/components/admin/status-dropdown'
 import DevisModal from '@/components/admin/devis-modal'
 
 export default function AdminContacts() {
-  const { leads, loading, refreshData } = useAdminData()
   const [filter, setFilter] = useState<'all' | 'hot' | 'warm' | 'cold'>('all')
   const [selectedLead, setSelectedLead] = useState<string | null>(null)
   
@@ -18,6 +17,10 @@ export default function AdminContacts() {
   const [contactModal, setContactModal] = useState<{ isOpen: boolean; lead: any }>({ isOpen: false, lead: null })
   const [notesModal, setNotesModal] = useState<{ isOpen: boolean; lead: any }>({ isOpen: false, lead: null })
   const [devisModal, setDevisModal] = useState<{ isOpen: boolean; lead: any }>({ isOpen: false, lead: null })
+  
+  // Détecter si une modale est ouverte pour bloquer auto-refresh
+  const hasOpenModal = contactModal.isOpen || notesModal.isOpen || devisModal.isOpen
+  const { leads, loading, refreshData } = useAdminData(hasOpenModal)
 
   // Handlers modales
   const openContactModal = (lead: any) => {
@@ -261,7 +264,7 @@ export default function AdminContacts() {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Budget:</span>
-                          <span className="font-medium">
+                          <span className="font-medium text-green-600">
                             {lead.budget === 'more-50k' ? '+30pts' :
                              lead.budget === '25k-50k' ? '+25pts' :
                              lead.budget === '10k-25k' ? '+15pts' : '+5pts'}
@@ -270,7 +273,7 @@ export default function AdminContacts() {
                         {lead.company && (
                           <div className="flex justify-between">
                             <span className="text-gray-600">Entreprise:</span>
-                            <span className="font-medium">+10pts</span>
+                            <span className="font-medium text-green-600">+10pts</span>
                           </div>
                         )}
                         <div className="flex justify-between border-t pt-2">
@@ -293,7 +296,7 @@ export default function AdminContacts() {
                       </div>
                       
                       <div className="flex items-center justify-between">
-                        <div className="flex gap-3">
+                        <div className="flex flex-wrap gap-3">
                           <motion.button
                             onClick={() => openContactModal(lead)}
                             className="bg-green-sapin text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-sapin-light transition-colors flex items-center space-x-2"
@@ -331,6 +334,7 @@ export default function AdminContacts() {
                           </motion.button>
                         </div>
 
+                        {/* Bouton Supprimer séparé avec marge */}
                         <motion.button
                           onClick={() => handleDeleteLead(lead)}
                           className="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors flex items-center space-x-2"

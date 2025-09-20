@@ -126,15 +126,18 @@ export default function StatusDropdown({ lead, onStatusChange }: StatusDropdownP
       <AnimatePresence>
         {isOpen && !updating && (
           <>
-            {/* Overlay pour fermer */}
+            {/* Overlay pour fermer - Z-index juste en-dessous du dropdown */}
             <div
-              className="fixed inset-0 z-10"
-              onClick={() => setIsOpen(false)}
+              className="fixed inset-0 z-40"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsOpen(false)
+              }}
             />
             
-            {/* Menu dropdown */}
+            {/* Menu dropdown - Z-index élevé pour passer par-dessus le contenu expandé */}
             <motion.div
-              className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20"
+              className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -147,7 +150,7 @@ export default function StatusDropdown({ lead, onStatusChange }: StatusDropdownP
                     e.stopPropagation() // Empêche la propagation vers le lead row
                     handleStatusChange(status as LeadStatus)
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm flex items-center space-x-2 hover:bg-gray-50 transition-colors ${
+                  className={`w-full text-left px-4 py-2 text-sm text-gray-900 flex items-center space-x-2 hover:bg-gray-50 transition-colors ${
                     status === currentStatus ? 'bg-gray-50' : ''
                   }`}
                   whileHover={{ x: 2 }}

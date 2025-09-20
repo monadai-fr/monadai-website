@@ -39,7 +39,7 @@ export interface LeadData {
   created_at: string
 }
 
-export function useAdminData() {
+export function useAdminData(disableAutoRefresh = false) {
   const [businessMetrics, setBusinessMetrics] = useState<BusinessMetrics | null>(null)
   const [securityMetrics, setSecurityMetrics] = useState<SecurityMetrics | null>(null)
   const [leads, setLeads] = useState<LeadData[]>([])
@@ -245,18 +245,20 @@ export function useAdminData() {
     }
   }, [fetchBusinessMetrics, fetchSecurityMetrics, fetchLeads])
 
-  // Init SIMPLE - Contacts et leads seulement
+  // Init SIMPLE - Contacts et leads seulement + auto-refresh conditionnel
   useEffect(() => {
     if (!initRef.current && typeof window !== 'undefined') {
       initRef.current = true
       refreshData()
       
-      // Auto-refresh pour contacts + analytics GTM
-      const interval = setInterval(refreshData, 120000) // 2 minutes
-      
-      return () => clearInterval(interval)
+      // Auto-refresh pour contacts + analytics GTM - seulement si pas de modale
+      if (!disableAutoRefresh) {
+        const interval = setInterval(refreshData, 120000) // 2 minutes
+        
+        return () => clearInterval(interval)
+      }
     }
-  }, [])
+  }, [disableAutoRefresh, refreshData])
 
   return {
     businessMetrics,

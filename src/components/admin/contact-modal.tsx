@@ -351,7 +351,7 @@ Au plaisir de vous rencontrer,`
                     <div className="bg-gray-50 rounded-lg p-4 mb-4">
                       <h3 className="font-semibold text-gray-900 mb-3">Aperçu de l'email</h3>
                       <div className="bg-white rounded border p-4 text-sm">
-                        <div className="border-b border-gray-200 pb-3 mb-4">
+                        <div className="border-b border-gray-200 pb-3 mb-4 text-gray-900">
                           <p><strong>De:</strong> MonadAI &lt;raph@monadai.fr&gt;</p>
                           <p><strong>À:</strong> {lead.name} &lt;{lead.email}&gt;</p>
                           <p><strong>Objet:</strong> {subject || '[Objet à remplir]'}</p>
