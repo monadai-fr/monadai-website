@@ -130,40 +130,45 @@ export function usePDFGenerator() {
       const contentWidth = imgWidth - finalConfig.margins.left - finalConfig.margins.right
       const effectivePageHeight = pageHeight - marginTop - finalConfig.margins.bottom
 
-      // Gestion multi-pages intelligente - éviter coupures
-      if (imgHeight <= effectivePageHeight) {
+      // Ajuster contenu pour tenir sur une page si possible
+      const maxSinglePageHeight = effectivePageHeight * 0.95 // 95% de la page pour marge sécurité
+
+      if (imgHeight <= maxSinglePageHeight) {
         // Une seule page
         const imgData = canvas.toDataURL('image/jpeg', finalConfig.quality)
         pdf.addImage(imgData, 'JPEG', marginLeft, marginTop, contentWidth, imgHeight)
       } else {
-        // Multi-pages avec gestion coupures
-        let currentY = 0
-        let pageNumber = 0
+        // Multi-pages - diviser intelligemment
+        const totalPages = Math.ceil(imgHeight / maxSinglePageHeight)
+        const actualPageHeight = imgHeight / totalPages // Répartition équitable
 
-        while (currentY < imgHeight) {
-          if (pageNumber > 0) {
+        for (let page = 0; page < totalPages; page++) {
+          if (page > 0) {
             pdf.addPage()
           }
 
-          const remainingHeight = imgHeight - currentY
-          const pageContentHeight = Math.min(remainingHeight, effectivePageHeight)
+          const startY = page * actualPageHeight
+          const endY = Math.min((page + 1) * actualPageHeight, imgHeight)
+          const pageContentHeight = endY - startY
 
-          // Canvas pour cette page seulement
+          // Canvas pour cette page
           const pageCanvas = document.createElement('canvas')
           const ctx = pageCanvas.getContext('2d')
           
-          if (ctx) {
-            pageCanvas.width = canvas.width
-            pageCanvas.height = (pageContentHeight * canvas.width) / contentWidth
+          if (ctx && pageContentHeight > 0) {
+            const sourceHeight = (pageContentHeight * canvas.width) / contentWidth
             
-            // Fond blanc pour éviter bloc noir
+            pageCanvas.width = canvas.width
+            pageCanvas.height = sourceHeight
+            
+            // Fond blanc obligatoire
             ctx.fillStyle = '#ffffff'
             ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height)
             
             ctx.drawImage(
               canvas,
-              0, (currentY * canvas.width) / contentWidth, // Source Y
-              canvas.width, pageCanvas.height, // Source dimensions
+              0, (startY * canvas.width) / contentWidth, // Source Y
+              canvas.width, sourceHeight, // Source dimensions
               0, 0, // Destination
               pageCanvas.width, pageCanvas.height // Destination dimensions
             )
@@ -171,12 +176,6 @@ export function usePDFGenerator() {
             const imgData = pageCanvas.toDataURL('image/jpeg', finalConfig.quality)
             pdf.addImage(imgData, 'JPEG', marginLeft, marginTop, contentWidth, pageContentHeight)
           }
-
-          currentY += pageContentHeight
-          pageNumber++
-
-          // Sécurité : max 10 pages
-          if (pageNumber >= 10) break
         }
       }
 

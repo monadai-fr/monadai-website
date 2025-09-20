@@ -257,7 +257,7 @@ export function useAdminData(disableAutoRefresh = false) {
       
       // Auto-refresh pour contacts + analytics GTM - seulement si pas de modale
       if (!disableAutoRefresh) {
-        const interval = setInterval(refreshData, 120000) // 2 minutes
+        const interval = setInterval(refreshData, 300000) // 5 minutes
         
         return () => clearInterval(interval)
       }

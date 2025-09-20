@@ -74,8 +74,8 @@ export default function StatusDropdown({ lead, onStatusChange }: StatusDropdownP
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
       setDropdownPosition({
-        top: rect.bottom + window.scrollY + 8,
-        left: rect.right + window.scrollX - 160 // 160px = largeur dropdown
+        top: rect.bottom + window.scrollY + 4, // Réduit l'écart
+        left: rect.left + window.scrollX // Aligné à gauche du bouton au lieu de droite
       })
     }
   }, [isOpen])
