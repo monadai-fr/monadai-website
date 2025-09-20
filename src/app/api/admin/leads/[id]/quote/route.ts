@@ -17,6 +17,8 @@ interface DevisData {
   conditions_paiement: string
   validite_jours: number
   notes_additionnelles?: string
+  pdf_base64?: string // PDF généré côté client
+  devis_number?: string // Numéro généré côté client
 }
 
 export async function POST(
@@ -26,7 +28,7 @@ export async function POST(
   const params = await context.params
   try {
     const body = await request.json()
-    const { prestations, prix_ht, conditions_paiement, validite_jours, notes_additionnelles } = body
+    const { prestations, prix_ht, conditions_paiement, validite_jours, notes_additionnelles, pdf_base64, devis_number } = body
 
     // Validation des données requises
     if (!prestations?.trim() || !prix_ht || prix_ht <= 0) {
@@ -56,8 +58,8 @@ export async function POST(
     const acompte_40 = Math.round(prix_ttc * 0.40) // Acompte 40%
     const solde_60 = prix_ttc - acompte_40 // Solde 60%
 
-    // Générer numéro devis unique
-    const devisNumber = `DEV-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
+    // Utiliser numéro généré côté client ou en créer un nouveau
+    const devisNumber = devis_number || `DEV-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
     
     // Dates
     const dateCreation = new Date().toLocaleDateString('fr-FR')
@@ -288,8 +290,15 @@ export async function POST(
 </html>
     `
 
-    // Solution temporaire : HTML optimisé pour impression PDF
-    // TODO: Intégrer vraie génération PDF (Puppeteer server-side)
+    // Vérifier si PDF fourni par le client, sinon fallback HTML
+    if (!pdf_base64) {
+      return NextResponse.json(
+        { success: false, message: 'PDF requis - génération côté client échouée' },
+        { status: 400 }
+      )
+    }
+
+    // Envoyer email avec PDF généré côté client
     try {
       await resend.emails.send({
         from: 'MonadAI <raph@monadai.fr>',
@@ -363,9 +372,9 @@ export async function POST(
         `,
         attachments: [
           {
-            filename: `Devis-${devisNumber}-MonadAI.html`,
-            content: Buffer.from(devisHTML).toString('base64'),
-            contentType: 'text/html'
+            filename: `Devis-${devisNumber}-MonadAI.pdf`,
+            content: pdf_base64,
+            contentType: 'application/pdf'
           }
         ]
       })

@@ -30,13 +30,17 @@ export interface LeadData {
   id: string
   name: string
   email: string
+  phone?: string
   company?: string
   service: string
   budget: string
+  timeline: string
   message: string
   score: number
   status: string
   created_at: string
+  notes?: any[]
+  last_contacted?: string
 }
 
 export function useAdminData(disableAutoRefresh = false) {

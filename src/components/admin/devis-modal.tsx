@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useFocusTrap } from '@/hooks/use-focus-trap'
+import { usePDFGenerator } from '@/hooks/use-pdf-generator'
 import type { LeadData } from '@/hooks/use-admin-data'
 
 interface DevisModalProps {
@@ -26,6 +27,7 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
   const [showPreview, setShowPreview] = useState(false)
 
   const focusRef = useFocusTrap(isOpen)
+  const { generateFromHTML, generating: generatingPDF, error: pdfError } = usePDFGenerator()
   
   // Empêcher scroll background quand modal ouverte
   useEffect(() => {
@@ -174,12 +176,54 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
     setError(null)
 
     try {
+      // Générer le HTML du devis (même template que l'API)
+      const devisNumber = `DEV-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
+      const prixHT = Number(formData.prix_ht)
+      const tva = Math.round(prixHT * 0.20)
+      const prixTTC = prixHT + tva
+      const acompte40 = Math.round(prixTTC * 0.40)
+      const solde60 = prixTTC - acompte40
+      
+      const dateCreation = new Date().toLocaleDateString('fr-FR')
+      const dateValidite = new Date(Date.now() + (formData.validite_jours || 30) * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')
+
+      const devisHTML = generateDevisHTML({
+        devisNumber,
+        contact: lead,
+        prestations: formData.prestations.trim(),
+        prix_ht: prixHT,
+        tva,
+        prix_ttc: prixTTC,
+        acompte_40: acompte40,
+        solde_60: solde60,
+        conditions_paiement: formData.conditions_paiement,
+        validite_jours: formData.validite_jours,
+        notes_additionnelles: formData.notes_additionnelles,
+        dateCreation,
+        dateValidite
+      })
+
+      // Génération PDF côté client
+      const pdfResult = await generateFromHTML(devisHTML, {
+        filename: `Devis-${devisNumber}-MonadAI.pdf`,
+        format: 'A4',
+        orientation: 'portrait'
+      })
+
+      if (!pdfResult) {
+        setError(pdfError || 'Erreur lors de la génération du PDF')
+        return
+      }
+
+      // Envoyer à l'API avec PDF base64
       const response = await fetch(`/api/admin/leads/${lead.id}/quote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          prix_ht: Number(formData.prix_ht)
+          prix_ht: prixHT,
+          pdf_base64: pdfResult.base64,
+          devis_number: devisNumber
         })
       })
 
@@ -215,6 +259,246 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
       'not-defined': 'à définir'
     }
     return budgetMap[budget as keyof typeof budgetMap] || budget
+  }
+
+  // Générateur HTML devis (DRY - même template que l'API)
+  const generateDevisHTML = (data: {
+    devisNumber: string
+    contact: LeadData
+    prestations: string
+    prix_ht: number
+    tva: number
+    prix_ttc: number
+    acompte_40: number
+    solde_60: number
+    conditions_paiement: string
+    validite_jours: number
+    notes_additionnelles?: string
+    dateCreation: string
+    dateValidite: string
+  }) => {
+    return `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devis ${data.devisNumber} - MonadAI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            line-height: 1.6; 
+            color: #333;
+            background: #ffffff;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 30px; }
+        
+        /* CSS Print-ready pour PDF */
+        @media print {
+            body { background: white !important; }
+            .container { padding: 20px !important; max-width: none !important; }
+            .header { break-inside: avoid; }
+            .devis-info { break-inside: avoid; }
+            .client-section { break-inside: avoid; }
+            .tarif-table { break-inside: avoid; }
+            .conditions-grid { break-inside: avoid; }
+        }
+        
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 3px solid #1B4332; padding-bottom: 20px; }
+        .logo-section { }
+        .logo { font-size: 32px; font-weight: bold; color: #1B4332; margin-bottom: 5px; }
+        .tagline { font-size: 14px; color: #666; font-style: italic; }
+        .company-info { text-align: right; font-size: 13px; color: #666; }
+        
+        /* Devis info */
+        .devis-info { background: #F0FDF4; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #1B4332; }
+        .devis-number { font-size: 24px; font-weight: bold; color: #1B4332; margin-bottom: 10px; }
+        .devis-dates { display: flex; justify-content: space-between; font-size: 14px; }
+        
+        /* Client info */
+        .client-section { margin-bottom: 30px; }
+        .section-title { font-size: 18px; font-weight: bold; color: #1B4332; margin-bottom: 15px; border-bottom: 2px solid #E5E7EB; padding-bottom: 5px; }
+        .client-info { background: #F9FAFB; padding: 20px; border-radius: 8px; }
+        
+        /* Prestations */
+        .prestations-section { margin-bottom: 30px; }
+        .prestations-content { 
+            background: #ffffff; 
+            border: 1px solid #E5E7EB; 
+            border-radius: 8px; 
+            padding: 20px; 
+            white-space: pre-wrap; 
+            line-height: 1.8;
+        }
+        
+        /* Tarification */
+        .tarif-section { margin-bottom: 30px; }
+        .tarif-table { width: 100%; border-collapse: collapse; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .tarif-table th, .tarif-table td { padding: 15px; text-align: left; border-bottom: 1px solid #E5E7EB; }
+        .tarif-table th { background: #1B4332; color: white; font-weight: 600; }
+        .tarif-table .total-row { background: #F0FDF4; font-weight: bold; }
+        .tarif-table .total-row td { border-bottom: none; }
+        .price { text-align: right; font-family: monospace; font-weight: bold; }
+        
+        /* Conditions */
+        .conditions-section { margin-bottom: 30px; }
+        .conditions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .condition-box { background: #F9FAFB; padding: 20px; border-radius: 8px; border: 1px solid #E5E7EB; }
+        .condition-title { font-weight: bold; color: #1B4332; margin-bottom: 10px; }
+        
+        /* Notes */
+        .notes-section { margin-bottom: 30px; }
+        .notes-content { 
+            background: #FEF3C7; 
+            border: 1px solid #FDE68A; 
+            padding: 20px; 
+            border-radius: 8px; 
+            font-style: italic;
+        }
+        
+        /* Footer */
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #E5E7EB; text-align: center; font-size: 12px; color: #666; }
+        .footer-contact { margin-bottom: 15px; }
+        .footer-legal { font-size: 10px; color: #999; }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 20px 15px; }
+            .header { flex-direction: column; gap: 20px; }
+            .company-info { text-align: left; }
+            .devis-dates { flex-direction: column; gap: 5px; }
+            .conditions-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo">MonadAI</div>
+                <div class="tagline">Solutions Web & IA sur mesure</div>
+            </div>
+            <div class="company-info">
+                <div><strong>Raphael LOTTE</strong></div>
+                <div>MonadAI - Micro-entreprise</div>
+                <div>SIREN: 991054958</div>
+                <div>raph@monadai.fr</div>
+                <div>06 47 24 48 09</div>
+                <div>Bordeaux, France</div>
+            </div>
+        </div>
+
+        <!-- Devis Info -->
+        <div class="devis-info">
+            <div class="devis-number">Devis ${data.devisNumber}</div>
+            <div class="devis-dates">
+                <span><strong>Date:</strong> ${data.dateCreation}</span>
+                <span><strong>Valide jusqu'au:</strong> ${data.dateValidite}</span>
+            </div>
+        </div>
+
+        <!-- Client -->
+        <div class="client-section">
+            <h2 class="section-title">Client</h2>
+            <div class="client-info">
+                <div style="margin-bottom: 10px;"><strong>${data.contact.name}</strong></div>
+                <div style="margin-bottom: 5px;">${data.contact.email}</div>
+                ${data.contact.phone ? `<div style="margin-bottom: 5px;">${data.contact.phone}</div>` : ''}
+                ${data.contact.company ? `<div style="margin-bottom: 5px;">${data.contact.company}</div>` : ''}
+                <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                    Service demandé: <strong>${
+                      data.contact.service === 'web' ? 'Développement Web' :
+                      data.contact.service === 'ia' ? 'Automatisation IA' :
+                      data.contact.service === 'transformation' ? 'Transformation Digitale' :
+                      data.contact.service === 'audit' ? 'Audit Technique' : 'Service personnalisé'
+                    }</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prestations -->
+        <div class="prestations-section">
+            <h2 class="section-title">Prestations proposées</h2>
+            <div class="prestations-content">${data.prestations}</div>
+        </div>
+
+        <!-- Tarification -->
+        <div class="tarif-section">
+            <h2 class="section-title">Tarification</h2>
+            <table class="tarif-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th style="text-align: right; width: 150px;">Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total HT</td>
+                        <td class="price">${data.prix_ht.toLocaleString('fr-FR')} €</td>
+                    </tr>
+                    <tr>
+                        <td>TVA (20%)</td>
+                        <td class="price">${data.tva.toLocaleString('fr-FR')} €</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td><strong>TOTAL TTC</strong></td>
+                        <td class="price">${data.prix_ttc.toLocaleString('fr-FR')} €</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Conditions -->
+        <div class="conditions-section">
+            <h2 class="section-title">Conditions</h2>
+            <div class="conditions-grid">
+                <div class="condition-box">
+                    <div class="condition-title">Modalités de paiement</div>
+                    <div>• Acompte: <strong>${data.acompte_40.toLocaleString('fr-FR')} €</strong> (40% à la signature)</div>
+                    <div>• Solde: <strong>${data.solde_60.toLocaleString('fr-FR')} €</strong> (60% à la livraison)</div>
+                    <div style="margin-top: 10px; font-size: 13px;">${data.conditions_paiement}</div>
+                </div>
+                
+                <div class="condition-box">
+                    <div class="condition-title">Délais & Validité</div>
+                    <div>• Devis valide: <strong>${data.validite_jours} jours</strong></div>
+                    <div>• Délai estimé: selon cahier des charges</div>
+                    <div>• Support inclus: 1 mois post-livraison</div>
+                </div>
+            </div>
+        </div>
+
+        ${data.notes_additionnelles ? `
+        <!-- Notes -->
+        <div class="notes-section">
+            <h2 class="section-title">Notes additionnelles</h2>
+            <div class="notes-content">${data.notes_additionnelles}</div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-contact">
+                <strong>MonadAI</strong> • Solutions Web & IA sur mesure<br/>
+                raph@monadai.fr • 06 47 24 48 09 • monadai.fr
+            </div>
+            <div class="footer-legal">
+                MonadAI - SIREN: 991054958 - Micro-entreprise non assujettie à la TVA<br/>
+                Siège social: Bordeaux, France
+            </div>
+        </div>
+    </div>
+</body>
+</html>`
   }
 
   return (
@@ -371,18 +655,18 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                     
                     <motion.button
                       type="submit"
-                      disabled={!formData.prestations.trim() || !formData.prix_ht || sending}
+                      disabled={!formData.prestations.trim() || !formData.prix_ht || sending || generatingPDF}
                       className="bg-green-sapin text-white px-6 py-2 rounded-lg font-medium hover:bg-green-sapin-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      {sending ? (
+                      {(sending || generatingPDF) ? (
                         <>
                           <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"/>
                             <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"/>
                           </svg>
-                          <span>Envoi en cours...</span>
+                          <span>{generatingPDF ? 'Génération PDF...' : 'Envoi en cours...'}</span>
                         </>
                       ) : (
                         <>
@@ -481,7 +765,7 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                     <p>• Le status du lead passera en "Devisé"</p>
                     <p>• Une note sera ajoutée automatiquement</p>
                     <p>• Vous recevrez une copie du devis</p>
-                    <p>• Format: HTML optimisé pour impression PDF</p>
+                    <p>• Format: PDF généré automatiquement</p>
                   </div>
                 </div>
                 </div>
@@ -491,13 +775,13 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                 <div className="flex-1 p-6">
                   <div className="h-full overflow-y-auto">
                     <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                      <h3 className="font-semibold text-gray-900 mb-3">Aperçu du devis HTML</h3>
+                      <h3 className="font-semibold text-gray-900 mb-3">Aperçu du devis PDF</h3>
                       <div className="bg-white rounded border p-4 text-sm">
                         <div className="border-b border-gray-200 pb-3 mb-4 text-gray-900">
                           <p><strong>De:</strong> MonadAI &lt;raph@monadai.fr&gt;</p>
                           <p><strong>À:</strong> {lead.name} &lt;{lead.email}&gt;</p>
                           <p><strong>Objet:</strong> Devis DEV-2024-{String(Date.now()).slice(-6)} - MonadAI</p>
-                          <p><strong>Pièce jointe:</strong> Devis-MonadAI.html</p>
+                          <p><strong>Pièce jointe:</strong> Devis-MonadAI.pdf</p>
                         </div>
                         
                         {/* Aperçu HTML miniature */}
@@ -568,8 +852,8 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <div className="text-sm text-amber-800">
-                            <strong>Format HTML/PDF :</strong> Le devis est généré en HTML professionnel optimisé pour impression. 
-                            Le client peut facilement l'enregistrer en PDF via son navigateur (Ctrl+P → Enregistrer en PDF).
+                            <strong>Génération PDF :</strong> Le devis est automatiquement converti en PDF professionnel côté client. 
+                            Le client recevra un document PDF prêt à imprimer et archiver.
                           </div>
                         </div>
                       </div>
