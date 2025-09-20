@@ -302,7 +302,7 @@ export default function AdminContacts() {
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 flex-1">
                             <motion.button
                               onClick={() => openContactModal(lead)}
-                              className="bg-green-sapin text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-sapin-light transition-colors flex items-center justify-center gap-2"
+                              className="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors flex items-center justify-center gap-2"
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                             >
@@ -314,7 +314,7 @@ export default function AdminContacts() {
 
                             <motion.button
                               onClick={() => openDevisModal(lead)}
-                              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                              className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors flex items-center justify-center gap-2"
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                             >
@@ -326,7 +326,7 @@ export default function AdminContacts() {
 
                             <motion.button
                               onClick={() => openNotesModal(lead)}
-                              className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors flex items-center justify-center gap-2"
+                              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                             >
@@ -337,10 +337,10 @@ export default function AdminContacts() {
                             </motion.button>
                           </div>
 
-                          {/* Bouton Supprimer séparé avec design distinct */}
+                          {/* Bouton Supprimer séparé avec design sobre */}
                           <motion.button
                             onClick={() => handleDeleteLead(lead)}
-                            className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2 lg:ml-4"
+                            className="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors flex items-center justify-center gap-2 lg:ml-4"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             title="Supprimer définitivement ce lead"
