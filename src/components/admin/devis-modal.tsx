@@ -481,7 +481,7 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                     <p>• Le status du lead passera en "Devisé"</p>
                     <p>• Une note sera ajoutée automatiquement</p>
                     <p>• Vous recevrez une copie du devis</p>
-                    <p>• Format: HTML professionnel en pièce jointe</p>
+                    <p>• Format: HTML optimisé pour impression PDF</p>
                   </div>
                 </div>
                 </div>
@@ -568,8 +568,8 @@ export default function DevisModal({ isOpen, onClose, lead, onSuccess }: DevisMo
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <div className="text-sm text-amber-800">
-                            <strong>Format HTML :</strong> Le devis est généré en HTML stylisé et envoyé en pièce jointe. 
-                            Pour un PDF, le client peut imprimer ou utiliser "Enregistrer en PDF" de son navigateur.
+                            <strong>Format HTML/PDF :</strong> Le devis est généré en HTML professionnel optimisé pour impression. 
+                            Le client peut facilement l'enregistrer en PDF via son navigateur (Ctrl+P → Enregistrer en PDF).
                           </div>
                         </div>
                       </div>

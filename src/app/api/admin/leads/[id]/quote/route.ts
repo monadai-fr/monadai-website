@@ -81,6 +81,22 @@ export async function POST(
         }
         .container { max-width: 800px; margin: 0 auto; padding: 40px 30px; }
         
+        /* CSS Print-ready pour PDF */
+        @media print {
+            body { background: white !important; }
+            .container { padding: 20px !important; max-width: none !important; }
+            .header { break-inside: avoid; }
+            .devis-info { break-inside: avoid; }
+            .client-section { break-inside: avoid; }
+            .tarif-table { break-inside: avoid; }
+            .conditions-grid { break-inside: avoid; }
+        }
+        
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        
         /* Header */
         .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 3px solid #1B4332; padding-bottom: 20px; }
         .logo-section { }
@@ -272,8 +288,8 @@ export async function POST(
 </html>
     `
 
-    // Pour l'instant, on envoie le HTML dans l'email
-    // TODO: Intégrer génération PDF plus tard
+    // Solution temporaire : HTML optimisé pour impression PDF
+    // TODO: Intégrer vraie génération PDF (Puppeteer server-side)
     try {
       await resend.emails.send({
         from: 'MonadAI <raph@monadai.fr>',
