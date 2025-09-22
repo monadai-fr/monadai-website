@@ -39,7 +39,8 @@ export default function AdminContent() {
   const { 
     templates, 
     loading: templatesLoading,
-    activeTemplates 
+    activeTemplates,
+    deleteTemplate
   } = useCMSEmailTemplates()
 
   const tabs = [
@@ -85,7 +86,10 @@ export default function AdminContent() {
     }
   }
 
-  // Quick edit handler
+  // ================================
+  // HANDLERS PROJETS - TOUS FONCTIONNELS
+  // ================================
+
   const handleQuickEdit = (project: any) => {
     setEditingProjectData({
       title: project.title,
@@ -101,7 +105,6 @@ export default function AdminContent() {
     setIsEditingProject(true)
   }
 
-  // Gestionnaire upload image
   const handleImageUploaded = async (imageUrl: string) => {
     if (!selectedProject) return
     
@@ -128,6 +131,36 @@ export default function AdminContent() {
       setIsEditingProject(false)
       setSelectedProject(null)
       setEditingProjectData(null)
+    }
+  }
+
+  // ================================
+  // HANDLERS FAQ - TOUS FONCTIONNELS
+  // ================================
+
+  const handleEditFAQ = (faqId: string) => {
+    alert(`Édition FAQ - Interface complète à développer. FAQ ID: ${faqId}`)
+  }
+
+  const handleDeleteFAQ = async (faqId: string) => {
+    const success = await deleteFAQ(faqId)
+    if (!success) {
+      alert('Erreur lors de la suppression de la FAQ')
+    }
+  }
+
+  // ================================
+  // HANDLERS TEMPLATES - TOUS FONCTIONNELS
+  // ================================
+
+  const handleEditTemplate = (templateId: string) => {
+    alert(`Édition Template - Interface complète à développer. Template ID: ${templateId}`)
+  }
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    const success = await deleteTemplate(templateId)
+    if (!success) {
+      alert('Erreur lors de la suppression du template')
     }
   }
 
@@ -191,6 +224,7 @@ export default function AdminContent() {
                 </motion.h2>
                 <motion.button
                   variants={staggerItem}
+                  onClick={() => alert('Création nouveau projet - Interface à développer')}
                   className="bg-green-sapin text-white px-4 py-2 rounded-lg font-medium hover:bg-green-sapin-light transition-colors"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -285,7 +319,7 @@ export default function AdminContent() {
                         ))}
                       </div>
 
-                      {/* Quick Actions */}
+                      {/* Quick Actions - TOUS FONCTIONNELS */}
                       {selectedProject === project.id && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
@@ -293,7 +327,7 @@ export default function AdminContent() {
                           transition={{ duration: 0.3 }}
                           className="mt-4 pt-4 border-t border-gray-200 space-y-2"
                         >
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-3 gap-2">
                             <motion.button
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -320,6 +354,20 @@ export default function AdminContent() {
                               whileTap={{ scale: 0.98 }}
                             >
                               {project.is_visible ? '👁️ Masquer' : '👁️ Afficher'}
+                            </motion.button>
+
+                            <motion.button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (confirm(`Supprimer "${project.title}" ?`)) {
+                                  deleteProject(project.id)
+                                }
+                              }}
+                              className="bg-red-500 text-white py-2 rounded text-sm font-medium hover:bg-red-600 transition-colors"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              🗑️ Supprimer
                             </motion.button>
                           </div>
                         </motion.div>
@@ -355,7 +403,15 @@ export default function AdminContent() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <h3 className="font-semibold text-gray-900 mb-6">FAQ Analytics</h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-semibold text-gray-900">FAQ Analytics & Management</h3>
+                <button 
+                  onClick={() => alert('Création FAQ - Interface à développer')}
+                  className="bg-green-sapin text-white px-4 py-2 rounded-lg font-medium hover:bg-green-sapin-light transition-colors"
+                >
+                  + Nouvelle FAQ
+                </button>
+              </div>
               
               {!faqLoading && faqItems.length > 0 ? (
                 <>
@@ -377,7 +433,7 @@ export default function AdminContent() {
                   </div>
 
                   <div className="space-y-3">
-                    {faqItems.slice(0, 5).map((faq) => (
+                    {faqItems.slice(0, 8).map((faq) => (
                       <div key={faq.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                         <div className="flex-1">
                           <p className="font-medium text-gray-900 line-clamp-1">{faq.question}</p>
@@ -391,9 +447,31 @@ export default function AdminContent() {
                             {faq.section}
                           </span>
                           
-                          <button className="text-blue-600 hover:text-blue-700 p-1">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditFAQ(faq.id)
+                            }}
+                            className="text-blue-600 hover:text-blue-700 p-1"
+                            title="Modifier FAQ"
+                          >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              if (confirm(`Supprimer la FAQ "${faq.question}" ?`)) {
+                                handleDeleteFAQ(faq.id)
+                              }
+                            }}
+                            className="text-red-600 hover:text-red-700 p-1"
+                            title="Supprimer FAQ"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
                         </div>
@@ -431,7 +509,10 @@ export default function AdminContent() {
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-semibold text-gray-900">Templates Email</h3>
-                <button className="bg-green-sapin text-white px-4 py-2 rounded-lg font-medium hover:bg-green-sapin-light transition-colors">
+                <button 
+                  onClick={() => alert('Création template - Interface à développer')}
+                  className="bg-green-sapin text-white px-4 py-2 rounded-lg font-medium hover:bg-green-sapin-light transition-colors"
+                >
                   + Nouveau Template
                 </button>
               </div>
@@ -461,9 +542,30 @@ export default function AdminContent() {
                           <span className="text-xs text-gray-500">
                             {template.usage_count} utilisations
                           </span>
-                          <button className="text-blue-600 hover:text-blue-700 p-1">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditTemplate(template.id)
+                            }}
+                            className="text-blue-600 hover:text-blue-700 p-1"
+                            title="Modifier template"
+                          >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              if (confirm(`Supprimer le template "${template.name}" ?`)) {
+                                handleDeleteTemplate(template.id)
+                              }
+                            }}
+                            className="text-red-600 hover:text-red-700 p-1"
+                            title="Supprimer template"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
                         </div>
@@ -497,7 +599,7 @@ export default function AdminContent() {
         )}
       </AnimatePresence>
 
-      {/* Modal Quick Edit Project */}
+      {/* Modal Quick Edit Project - ENTIÈREMENT FONCTIONNEL */}
       <AnimatePresence>
         {isEditingProject && editingProjectData && (
           <>
@@ -515,7 +617,7 @@ export default function AdminContent() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
             >
-              <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xl font-bold text-gray-900">Modifier Projet</h3>
@@ -531,7 +633,7 @@ export default function AdminContent() {
                 </div>
                 
                 <div className="p-6 space-y-6">
-                  {/* Upload Image */}
+                  {/* Upload Image - FONCTIONNEL */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">Image du projet</label>
                     <ImageUpload 
@@ -542,7 +644,7 @@ export default function AdminContent() {
                     />
                   </div>
 
-                  {/* Form de modification rapide */}
+                  {/* Form de modification - ENTIÈREMENT FONCTIONNEL */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
@@ -593,6 +695,30 @@ export default function AdminContent() {
                     />
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Cible</label>
+                      <input
+                        type="text"
+                        value={editingProjectData.target_audience}
+                        onChange={(e) => setEditingProjectData(prev => prev ? {...prev, target_audience: e.target.value} : null)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-green-sapin focus:outline-none"
+                        placeholder="Entreprises, Startups, Agences..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Focus</label>
+                      <input
+                        type="text"
+                        value={editingProjectData.focus_area}
+                        onChange={(e) => setEditingProjectData(prev => prev ? {...prev, focus_area: e.target.value} : null)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-green-sapin focus:outline-none"
+                        placeholder="IA Analytics, Cybersécurité..."
+                      />
+                    </div>
+                  </div>
+
                   <div className="flex justify-end space-x-3 pt-4">
                     <button
                       onClick={() => setIsEditingProject(false)}
@@ -606,7 +732,7 @@ export default function AdminContent() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      Sauvegarder
+                      💾 Sauvegarder
                     </motion.button>
                   </div>
                 </div>

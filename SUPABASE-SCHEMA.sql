@@ -1,6 +1,6 @@
 -- ========================================
 -- SCHEMA SUPABASE CMS MONADAI
--- Version: 1.0 - Copy/Paste dans SQL Editor Supabase
+-- Version: 2.0 - Système Images + Copy/Paste dans SQL Editor Supabase
 -- ========================================
 
 -- 1. TABLE PROJETS SAAS (Zentra Flux, Clara Node, Vora Pulse)
@@ -64,10 +64,23 @@ CREATE TRIGGER update_faq_items_updated_at BEFORE UPDATE ON faq_items FOR EACH R
 CREATE TRIGGER update_email_templates_updated_at BEFORE UPDATE ON email_templates FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ========================================
+-- SUPABASE STORAGE CONFIGURATION
+-- ========================================
+
+-- Bucket pour images projets
+INSERT INTO storage.buckets (id, name, public) VALUES ('project-images', 'project-images', true);
+
+-- Politiques d'accès
+CREATE POLICY "Public read access project images" ON storage.objects FOR SELECT USING (bucket_id = 'project-images');
+CREATE POLICY "Admin upload project images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'project-images');
+CREATE POLICY "Admin update project images" ON storage.objects FOR UPDATE USING (bucket_id = 'project-images');
+CREATE POLICY "Admin delete project images" ON storage.objects FOR DELETE USING (bucket_id = 'project-images');
+
+-- ========================================
 -- DONNÉES INITIALES (Vos projets actuels)
 -- ========================================
 
--- PROJETS SAAS EXISTANTS (avec placeholder images)
+-- PROJETS SAAS EXISTANTS (sans images initialement)
 INSERT INTO projects (slug, title, category, description, status, progress, tech_stack, target_audience, focus_area, sort_order) VALUES
 ('zentra-flux', 'Zentra Flux', 'SaaS Opérationnel', 'Centralise les données opérationnelles avec alertes IA intelligentes', 'En développement', 75, ARRAY['Next.js', 'Supabase', 'IA Analytics'], 'Entreprises', 'IA Analytics', 1),
 ('clara-node', 'Clara Node', 'SaaS Collaboratif', 'Dashboard interactif avec IA pour optimiser le travail d''équipe', 'En développement', 60, ARRAY['Next.js', 'Supabase', 'Algorithmes IA'], 'Startups', 'Collaboration IA', 2),
@@ -85,7 +98,13 @@ INSERT INTO faq_items (section, question, answer, sort_order) VALUES
 ('services', 'Comment se déroule un projet avec MonadAI ?', 'Nous commençons par un échange gratuit pour comprendre vos besoins. Ensuite : devis détaillé sous 24h, acompte 40%, développement avec points réguliers, livraison avec formation, puis 3 mois de support inclus.', 1),
 ('services', 'Quels sont vos tarifs et modalités de paiement ?', 'Nos tarifs démarrent à 1000€ pour un audit technique, 1500€ pour un site web et 2000€ pour de l''automatisation IA. Paiement : 40% à la signature, 60% à la livraison. Moyens acceptés : virement bancaire et lien de paiement Qonto.', 2),
 ('services', 'Quels sont les délais de réalisation ?', 'Délais standards : site vitrine 2-3 semaines, e-commerce 4-6 semaines, automatisation IA 3-5 semaines. Pour les projets urgents, supplément de 30% pour réduire les délais de 50%.', 3),
-('services', 'Pouvez-vous gérer des projets urgents ?', 'Oui ! Pour les projets urgents (délai réduit de 50%), nous appliquons un supplément de 30%. Cela nous permet de mobiliser plus de ressources et de prioriser votre projet.', 4);
+('services', 'Qui peut faire appel à vos services ?', 'Nous accompagnons tous types de projets : entreprises (startups, PME, ETI, grands groupes) et particuliers (freelances, créateurs, associations, projets personnels). Aucune restriction de taille ou secteur.', 4),
+('services', 'Quelles technologies utilisez-vous ?', 'Stack moderne : Next.js, React, TypeScript pour le web. Supabase pour les bases de données. OpenAI GPT pour l''IA. Déploiement Vercel. Sécurité renforcée avec expertise pentest et DevSecOps.', 5),
+('services', 'Comment garantissez-vous la sécurité ?', 'Expertise cybersécurité : chiffrement données, headers sécurisés, validation stricte, tests de pénétration. Formé en pentest et DevSecOps, je porte une attention particulière à la sécurité de chaque projet.', 6),
+('services', 'Quel support après livraison ?', '3 mois de support technique inclus, corrections bugs sous 60 jours, formation à la prise en main. Maintenance évolutive disponible sur devis. Réponse garantie sous 24h.', 7),
+('services', 'Vos projets SaaS (Zentra Flux, Clara Node, Vora Pulse) sont-ils disponibles ?', 'Ces projets SaaS sont actuellement en développement. Ils seront proposés en version bêta courant 2025. Intéressé(e) ? Contactez-nous pour être informé(e) en avant-première !', 8),
+('services', 'Avez-vous des références ou projets à montrer ?', 'En tant que jeune entreprise fondée en 2025, nous construisons actuellement notre portfolio avec nos premiers clients. Nos 3 projets SaaS en développement témoignent de notre expertise technique.', 9),
+('services', 'Pouvez-vous gérer des projets urgents ?', 'Oui ! Pour les projets urgents (délai réduit de 50%), nous appliquons un supplément de 30%. Cela nous permet de mobiliser plus de ressources et de prioriser votre projet.', 10);
 
 -- EMAIL TEMPLATES
 INSERT INTO email_templates (name, type, subject, html_content, variables) VALUES
@@ -125,7 +144,6 @@ ARRAY['{{name}}', '{{service}}', '{{company}}']),
 ARRAY['{{name}}', '{{devis_number}}', '{{montant_ttc}}', '{{service}}']);
 
 -- ========================================
--- ========================================
 -- SUPABASE STORAGE CONFIGURATION
 -- ========================================
 
@@ -134,9 +152,9 @@ INSERT INTO storage.buckets (id, name, public) VALUES ('project-images', 'projec
 
 -- Politiques d'accès
 CREATE POLICY "Public read access project images" ON storage.objects FOR SELECT USING (bucket_id = 'project-images');
-CREATE POLICY "Admin upload project images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'project-images' AND auth.uid() IS NOT NULL);
-CREATE POLICY "Admin update project images" ON storage.objects FOR UPDATE USING (bucket_id = 'project-images' AND auth.uid() IS NOT NULL);
-CREATE POLICY "Admin delete project images" ON storage.objects FOR DELETE USING (bucket_id = 'project-images' AND auth.uid() IS NOT NULL);
+CREATE POLICY "Admin upload project images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'project-images');
+CREATE POLICY "Admin update project images" ON storage.objects FOR UPDATE USING (bucket_id = 'project-images');
+CREATE POLICY "Admin delete project images" ON storage.objects FOR DELETE USING (bucket_id = 'project-images');
 
 -- ========================================
 -- INDEX POUR PERFORMANCE
