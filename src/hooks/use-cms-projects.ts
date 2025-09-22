@@ -12,8 +12,6 @@ export interface Project {
   status: string
   progress: number
   image_url?: string
-  gradient_from: string
-  gradient_to: string
   tech_stack: string[]
   target_audience?: string
   focus_area?: string
@@ -29,8 +27,6 @@ export interface ProjectFormData {
   description: string
   status: string
   progress: number
-  gradient_from: string
-  gradient_to: string
   tech_stack: string[]
   target_audience: string
   focus_area: string

@@ -12,9 +12,7 @@ CREATE TABLE projects (
   description TEXT NOT NULL,
   status VARCHAR(30) DEFAULT 'En développement',
   progress INTEGER DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
-  image_url TEXT, -- URL image du projet (optionnel)
-  gradient_from VARCHAR(30) DEFAULT 'green-600',
-  gradient_to VARCHAR(30) DEFAULT 'green-400',
+  image_url TEXT, -- URL image du projet depuis Supabase Storage
   tech_stack TEXT[] DEFAULT ARRAY['Next.js', 'Supabase'],
   target_audience VARCHAR(100),
   focus_area VARCHAR(100), -- IA Analytics, Collaboration IA, etc.
@@ -69,11 +67,11 @@ CREATE TRIGGER update_email_templates_updated_at BEFORE UPDATE ON email_template
 -- DONNÉES INITIALES (Vos projets actuels)
 -- ========================================
 
--- PROJETS SAAS EXISTANTS
-INSERT INTO projects (slug, title, category, description, status, progress, gradient_from, gradient_to, tech_stack, target_audience, focus_area, sort_order) VALUES
-('zentra-flux', 'Zentra Flux', 'SaaS Opérationnel', 'Centralise les données opérationnelles avec alertes IA intelligentes', 'En développement', 75, 'green-600', 'green-400', ARRAY['Next.js', 'Supabase', 'IA Analytics'], 'Entreprises', 'IA Analytics', 1),
-('clara-node', 'Clara Node', 'SaaS Collaboratif', 'Dashboard interactif avec IA pour optimiser le travail d''équipe', 'En développement', 60, 'gray-700', 'gray-500', ARRAY['Next.js', 'Supabase', 'Algorithmes IA'], 'Startups', 'Collaboration IA', 2),
-('vora-pulse', 'Vora Pulse', 'Automatisation IA', 'Workflows clients automatisés avec sécurité renforcée', 'En développement', 45, 'green-700', 'green-500', ARRAY['Next.js', 'Supabase', 'APIs IA'], 'Agences', 'Cybersécurité', 3);
+-- PROJETS SAAS EXISTANTS (avec placeholder images)
+INSERT INTO projects (slug, title, category, description, status, progress, tech_stack, target_audience, focus_area, sort_order) VALUES
+('zentra-flux', 'Zentra Flux', 'SaaS Opérationnel', 'Centralise les données opérationnelles avec alertes IA intelligentes', 'En développement', 75, ARRAY['Next.js', 'Supabase', 'IA Analytics'], 'Entreprises', 'IA Analytics', 1),
+('clara-node', 'Clara Node', 'SaaS Collaboratif', 'Dashboard interactif avec IA pour optimiser le travail d''équipe', 'En développement', 60, ARRAY['Next.js', 'Supabase', 'Algorithmes IA'], 'Startups', 'Collaboration IA', 2),
+('vora-pulse', 'Vora Pulse', 'Automatisation IA', 'Workflows clients automatisés avec sécurité renforcée', 'En développement', 45, ARRAY['Next.js', 'Supabase', 'APIs IA'], 'Agences', 'Cybersécurité', 3);
 
 -- FAQ HOMEPAGE
 INSERT INTO faq_items (section, question, answer, sort_order) VALUES
@@ -125,6 +123,20 @@ ARRAY['{{name}}', '{{service}}', '{{company}}']),
   </div>
 </div>', 
 ARRAY['{{name}}', '{{devis_number}}', '{{montant_ttc}}', '{{service}}']);
+
+-- ========================================
+-- ========================================
+-- SUPABASE STORAGE CONFIGURATION
+-- ========================================
+
+-- Bucket pour images projets
+INSERT INTO storage.buckets (id, name, public) VALUES ('project-images', 'project-images', true);
+
+-- Politiques d'accès
+CREATE POLICY "Public read access project images" ON storage.objects FOR SELECT USING (bucket_id = 'project-images');
+CREATE POLICY "Admin upload project images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'project-images' AND auth.uid() IS NOT NULL);
+CREATE POLICY "Admin update project images" ON storage.objects FOR UPDATE USING (bucket_id = 'project-images' AND auth.uid() IS NOT NULL);
+CREATE POLICY "Admin delete project images" ON storage.objects FOR DELETE USING (bucket_id = 'project-images' AND auth.uid() IS NOT NULL);
 
 -- ========================================
 -- INDEX POUR PERFORMANCE

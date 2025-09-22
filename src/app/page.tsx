@@ -272,11 +272,26 @@ export default function Home() {
                   className="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300"
                   whileHover={{ y: -5 }}
                 >
-                  <div className={`h-48 bg-gradient-to-br from-${project.gradient_from} to-${project.gradient_to} rounded-lg mb-6 flex items-center justify-center`}>
-                    <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
+                  {project.image_url ? (
+                    <div className="h-48 rounded-lg mb-6 overflow-hidden">
+                      <Image 
+                        src={project.image_url} 
+                        alt={`${project.title} - ${project.category}`}
+                        width={400}
+                        height={192}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-48 bg-green-sapin rounded-lg mb-6 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <p className="text-sm opacity-75">Image à ajouter</p>
+                      </div>
+                    </div>
+                  )}
                   <h3 className="text-xl font-semibold text-black mb-2">{project.title}</h3>
                   <p className="text-green-sapin font-medium mb-3">{project.category}</p>
                   <p className="text-gray-600 text-sm mb-4">{project.description}</p>

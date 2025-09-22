@@ -14,8 +14,7 @@ interface PublicProject {
   category: string
   description: string
   status: string
-  gradient_from: string
-  gradient_to: string
+  image_url?: string
   tech_stack: string[]
   target_audience?: string
   focus_area?: string

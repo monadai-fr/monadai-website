@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem } from '@/lib/motion-variants'
 import Breadcrumb from '@/components/breadcrumb'
@@ -73,12 +74,25 @@ export default function PortfolioPage() {
                       className="relative group-hover:scale-[1.02] transition-transform duration-700"
                     >
                       <div className="aspect-[16/10] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                        <div className={`h-full bg-gradient-to-br from-${project.gradient_from} to-${project.gradient_to} flex items-center justify-center`}>
-                          <div className="text-center text-white p-8">
-                            <h3 className="text-3xl font-bold mb-2">{project.title}</h3>
-                            <p className="text-lg opacity-90">{project.category}</p>
+                        {project.image_url ? (
+                          <Image 
+                            src={project.image_url} 
+                            alt={`${project.title} - ${project.category}`}
+                            width={600}
+                            height={375}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full bg-green-sapin flex items-center justify-center">
+                            <div className="text-center text-white p-8">
+                              <svg className="w-20 h-20 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                              <p className="text-sm opacity-75">Image à ajouter depuis Admin</p>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                       <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-white rounded-xl shadow-lg border border-gray-200 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
                         <svg className="w-8 h-8 text-green-sapin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,7 +106,7 @@ export default function PortfolioPage() {
                   <div className={`lg:col-span-2 ${index % 2 === 1 ? 'lg:col-start-1 lg:row-start-1' : ''}`}>
                     <div className="space-y-6">
                       <div>
-                        <span className={`inline-block px-3 py-1 bg-gradient-to-r from-${project.gradient_from} to-${project.gradient_to} bg-clip-text text-transparent text-sm font-medium border border-gray-200 rounded-full mb-4`}>
+                        <span className="inline-block px-3 py-1 bg-green-sapin text-white text-sm font-medium rounded-full mb-4">
                           {project.category}
                         </span>
                         <h2 className="text-3xl font-bold text-black mb-3">{project.title}</h2>

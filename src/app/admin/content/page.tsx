@@ -6,6 +6,8 @@ import { staggerContainer, staggerItem } from '@/lib/motion-variants'
 import { useCMSProjects, type ProjectFormData } from '@/hooks/use-cms-projects'
 import { useCMSFAQ, type FAQFormData } from '@/hooks/use-cms-faq'
 import { useCMSEmailTemplates, type EmailTemplateFormData } from '@/hooks/use-cms-email-templates'
+import ImageUpload from '@/components/admin/image-upload'
+import Image from 'next/image'
 
 type TabType = 'projects' | 'faq' | 'templates'
 
@@ -91,14 +93,31 @@ export default function AdminContent() {
       description: project.description,
       status: project.status,
       progress: project.progress,
-      gradient_from: project.gradient_from,
-      gradient_to: project.gradient_to,
       tech_stack: project.tech_stack,
       target_audience: project.target_audience || '',
       focus_area: project.focus_area || ''
     })
     setSelectedProject(project.id)
     setIsEditingProject(true)
+  }
+
+  // Gestionnaire upload image
+  const handleImageUploaded = async (imageUrl: string) => {
+    if (!selectedProject) return
+    
+    const success = await updateProject(selectedProject, { image_url: imageUrl } as any)
+    if (success) {
+      // Le projet sera mis à jour automatiquement via le hook
+    }
+  }
+
+  const handleImageRemoved = async () => {
+    if (!selectedProject) return
+    
+    const success = await updateProject(selectedProject, { image_url: null } as any)
+    if (success) {
+      // Le projet sera mis à jour automatiquement via le hook
+    }
   }
 
   const handleSaveProject = async () => {
@@ -204,13 +223,26 @@ export default function AdminContent() {
                       onClick={() => setSelectedProject(selectedProject === project.id ? null : project.id)}
                       whileHover={{ y: -2 }}
                     >
-                      {/* Visual Gradient */}
-                      <div className={`h-32 bg-gradient-to-br from-${project.gradient_from} to-${project.gradient_to} rounded-lg mb-4 flex items-center justify-center`}>
-                        <div className="text-center text-white">
-                          <h3 className="text-lg font-bold">{project.title}</h3>
-                          <p className="text-sm opacity-90">{project.category}</p>
+                      {/* Image du projet */}
+                      {project.image_url ? (
+                        <div className="h-32 rounded-lg mb-4 overflow-hidden relative">
+                          <Image 
+                            src={project.image_url} 
+                            alt={`${project.title} - ${project.category}`}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-                      </div>
+                      ) : (
+                        <div className="h-32 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg mb-4 flex items-center justify-center">
+                          <div className="text-center text-gray-400">
+                            <svg className="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p className="text-xs">Aucune image</p>
+                          </div>
+                        </div>
+                      )}
 
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-bold text-gray-900">{project.title}</h3>
@@ -498,7 +530,18 @@ export default function AdminContent() {
                   </div>
                 </div>
                 
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-6">
+                  {/* Upload Image */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Image du projet</label>
+                    <ImageUpload 
+                      currentImageUrl={projects.find(p => p.id === selectedProject)?.image_url}
+                      projectSlug={projects.find(p => p.id === selectedProject)?.slug || 'projet'}
+                      onImageUploaded={handleImageUploaded}
+                      onImageRemoved={handleImageRemoved}
+                    />
+                  </div>
+
                   {/* Form de modification rapide */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
