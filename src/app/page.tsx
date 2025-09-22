@@ -7,7 +7,8 @@ import { fadeIn, slideUp, staggerContainer, staggerItem, scaleIn } from '@/lib/m
 import { useContactForm } from '@/hooks/useContactForm'
 import { serviceLabels } from '@/lib/contact-schema'
 import FAQ from '@/components/faq'
-import { homepageFaqData } from '@/lib/faq-homepage-data'
+import { useDynamicFAQ } from '@/hooks/use-dynamic-faq'
+import { usePublicProjects } from '@/hooks/use-public-projects'
 import TurnstileCaptcha from '@/components/turnstile-captcha'
 import Honeypot from '@/components/honeypot'
 
@@ -49,6 +50,12 @@ export default function Home() {
     form, onSubmit, isLoading, isSuccess, isError, serverMessage, resetForm,
     captchaToken, setCaptchaToken, honeypotValue, setHoneypotValue, isCaptchaValid
   } = useContactForm()
+
+  // FAQ dynamique depuis Supabase
+  const { faqItems: dynamicFAQ, loading: faqLoading } = useDynamicFAQ('homepage')
+  
+  // Projets dynamiques depuis Supabase pour section Portfolio
+  const { projects: dynamicProjects, loading: projectsLoading } = usePublicProjects()
 
   return (
     <>
@@ -239,61 +246,45 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: "-50px" }}
-          >
-            <motion.div
-              variants={staggerItem}
-              className="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300"
-              whileHover={{ y: -5 }}
+          {projectsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {Array.from({ length: 3 }, (_, i) => (
+                <div key={i} className="animate-pulse bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                  <div className="h-48 bg-gray-200 rounded-lg mb-6"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3 mb-3"></div>
+                  <div className="h-12 bg-gray-200 rounded"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-3 gap-8"
+              variants={staggerContainer}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true, margin: "-50px" }}
             >
-              <div className="h-48 bg-gradient-to-br from-green-600 to-green-400 rounded-lg mb-6 flex items-center justify-center">
-                <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-black mb-2">Zentra Flux</h3>
-              <p className="text-green-sapin font-medium mb-3">SaaS Opérationnel</p>
-              <p className="text-gray-600 text-sm mb-4">Centralise les données opérationnelles avec alertes IA intelligentes</p>
-              <div className="text-sm text-gray-500">Next.js • Supabase • IA Analytics</div>
+              {dynamicProjects.slice(0, 3).map((project) => (
+                <motion.div
+                  key={project.id}
+                  variants={staggerItem}
+                  className="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300"
+                  whileHover={{ y: -5 }}
+                >
+                  <div className={`h-48 bg-gradient-to-br from-${project.gradient_from} to-${project.gradient_to} rounded-lg mb-6 flex items-center justify-center`}>
+                    <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-black mb-2">{project.title}</h3>
+                  <p className="text-green-sapin font-medium mb-3">{project.category}</p>
+                  <p className="text-gray-600 text-sm mb-4">{project.description}</p>
+                  <div className="text-sm text-gray-500">{project.tech_stack.join(' • ')}</div>
+                </motion.div>
+              ))}
             </motion.div>
-
-            <motion.div
-              variants={staggerItem}
-              className="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300"
-              whileHover={{ y: -5 }}
-            >
-              <div className="h-48 bg-gradient-to-br from-gray-700 to-gray-500 rounded-lg mb-6 flex items-center justify-center">
-                <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-black mb-2">Clara Node</h3>
-              <p className="text-green-sapin font-medium mb-3">SaaS Collaboratif</p>
-              <p className="text-gray-600 text-sm mb-4">Dashboard interactif avec IA pour optimiser le travail d'équipe</p>
-              <div className="text-sm text-gray-500">Next.js • Supabase • Algorithmes IA</div>
-            </motion.div>
-
-            <motion.div
-              variants={staggerItem}
-              className="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300"
-              whileHover={{ y: -5 }}
-            >
-              <div className="h-48 bg-gradient-to-br from-green-700 to-green-500 rounded-lg mb-6 flex items-center justify-center">
-                <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-black mb-2">Vora Pulse</h3>
-              <p className="text-green-sapin font-medium mb-3">Automatisation IA</p>
-              <p className="text-gray-600 text-sm mb-4">Workflows clients automatisés avec sécurité renforcée</p>
-              <div className="text-sm text-gray-500">Next.js • Supabase • APIs IA</div>
-            </motion.div>
-          </motion.div>
+          )}
 
           <motion.div 
             className="text-center mt-12"
@@ -392,12 +383,14 @@ export default function Home() {
       {/* FAQ Section Homepage */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <FAQ 
-            items={homepageFaqData} 
-            title="Pourquoi MonadAI ?" 
-            className="max-w-5xl mx-auto"
-            section="homepage"
-          />
+          {!faqLoading && (
+            <FAQ 
+              items={dynamicFAQ} 
+              title="Pourquoi MonadAI ?" 
+              className="max-w-5xl mx-auto"
+              section="homepage"
+            />
+          )}
         </div>
       </section>
 

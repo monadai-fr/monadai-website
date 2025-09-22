@@ -4,38 +4,11 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem } from '@/lib/motion-variants'
 import Breadcrumb from '@/components/breadcrumb'
-
-const projects = [
-  {
-    id: 'zentra-flux',
-    title: 'Zentra Flux',
-    category: 'SaaS Opérationnel',
-    description: 'Plateforme SaaS qui centralise les données opérationnelles en temps réel avec alertes IA sur les goulots d\'étranglement',
-    metrics: { status: 'En développement', tech: 'Next.js', focus: 'IA Analytics' },
-    stack: ['Next.js', 'Supabase', 'IA Analytics'],
-    gradient: 'from-green-600 to-green-400'
-  },
-  {
-    id: 'clara-node',
-    title: 'Clara Node',
-    category: 'SaaS Collaboratif',
-    description: 'SaaS qui agrège les retours d\'équipe en dashboard interactif avec IA pour prioriser les tâches et détecter les frictions',
-    metrics: { status: 'En développement', target: 'Startups', focus: 'Collaboration IA' },
-    stack: ['Next.js', 'Supabase', 'Algorithmes IA'],
-    gradient: 'from-gray-700 to-gray-500'
-  },
-  {
-    id: 'vora-pulse',
-    title: 'Vora Pulse',
-    category: 'Automatisation IA',
-    description: 'Solution d\'automatisation IA pour workflows clients : emails, suivis automatiques et rapports avec sécurité renforcée',
-    metrics: { status: 'En développement', focus: 'Cybersécurité', target: 'Agences' },
-    stack: ['Next.js', 'Supabase', 'APIs IA'],
-    gradient: 'from-green-700 to-green-500'
-  }
-]
+import { usePublicProjects } from '@/hooks/use-public-projects'
 
 export default function PortfolioPage() {
+  // Projets dynamiques depuis Supabase
+  const { projects, loading: projectsLoading } = usePublicProjects()
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
@@ -62,13 +35,29 @@ export default function PortfolioPage() {
       {/* Projets */}
       <section className="py-16">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
-          <motion.div
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
-            className="space-y-24"
-          >
-            {projects.map((project, index) => (
+          {projectsLoading ? (
+            <div className="space-y-24">
+              {Array.from({ length: 3 }, (_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
+                    <div className="lg:col-span-3 h-80 bg-gray-200 rounded-2xl"></div>
+                    <div className="lg:col-span-2 space-y-4">
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-16 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              className="space-y-24"
+            >
+              {projects.map((project, index) => (
               <motion.article
                 key={project.id}
                 variants={staggerItem}
@@ -84,7 +73,7 @@ export default function PortfolioPage() {
                       className="relative group-hover:scale-[1.02] transition-transform duration-700"
                     >
                       <div className="aspect-[16/10] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                        <div className={`h-full bg-gradient-to-br ${project.gradient} flex items-center justify-center`}>
+                        <div className={`h-full bg-gradient-to-br from-${project.gradient_from} to-${project.gradient_to} flex items-center justify-center`}>
                           <div className="text-center text-white p-8">
                             <h3 className="text-3xl font-bold mb-2">{project.title}</h3>
                             <p className="text-lg opacity-90">{project.category}</p>
@@ -103,7 +92,7 @@ export default function PortfolioPage() {
                   <div className={`lg:col-span-2 ${index % 2 === 1 ? 'lg:col-start-1 lg:row-start-1' : ''}`}>
                     <div className="space-y-6">
                       <div>
-                        <span className={`inline-block px-3 py-1 bg-gradient-to-r ${project.gradient} bg-clip-text text-transparent text-sm font-medium border border-gray-200 rounded-full mb-4`}>
+                        <span className={`inline-block px-3 py-1 bg-gradient-to-r from-${project.gradient_from} to-${project.gradient_to} bg-clip-text text-transparent text-sm font-medium border border-gray-200 rounded-full mb-4`}>
                           {project.category}
                         </span>
                         <h2 className="text-3xl font-bold text-black mb-3">{project.title}</h2>
@@ -111,18 +100,28 @@ export default function PortfolioPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {Object.entries(project.metrics).map(([key, value]) => (
-                          <span key={key} className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
-                            <span className="text-xs text-gray-500 mr-1 capitalize">{key}:</span>
-                            <span className="font-medium text-green-sapin">{value}</span>
+                        <span className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                          <span className="text-xs text-gray-500 mr-1">Status:</span>
+                          <span className="font-medium text-green-sapin">{project.status}</span>
+                        </span>
+                        {project.target_audience && (
+                          <span className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                            <span className="text-xs text-gray-500 mr-1">Cible:</span>
+                            <span className="font-medium text-green-sapin">{project.target_audience}</span>
                           </span>
-                        ))}
+                        )}
+                        {project.focus_area && (
+                          <span className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                            <span className="text-xs text-gray-500 mr-1">Focus:</span>
+                            <span className="font-medium text-green-sapin">{project.focus_area}</span>
+                          </span>
+                        )}
                       </div>
 
                       <div>
                         <div className="text-sm text-gray-500 mb-2">Stack technique :</div>
                         <div className="flex flex-wrap gap-2">
-                          {project.stack.map((tech) => (
+                          {project.tech_stack.map((tech) => (
                             <span key={tech} className="px-3 py-1 bg-white border border-gray-200 rounded-full text-sm text-gray-700">
                               {tech}
                             </span>
@@ -133,8 +132,9 @@ export default function PortfolioPage() {
                   </div>
                 </div>
               </motion.article>
-            ))}
-          </motion.div>
+              ))}
+            </motion.div>
+          )}
         </div>
       </section>
 

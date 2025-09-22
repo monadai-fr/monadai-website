@@ -2,18 +2,15 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { getGTMAnalytics } from '@/lib/gtm-analytics'
-
 /**
  * Hook Admin Data - Business Intelligence MonadAI
- * Architecture hybride : Contacts (Supabase) + Analytics (GTM dataLayer)
+ * Métriques 100% fiables basées sur données Supabase réelles
  */
 
 export interface BusinessMetrics {
-  visitors24h: number
-  devisSimulated: number
   contactsSubmitted: number
-  conversionRate: number
+  leadsThisWeek: number
+  avgLeadScore: number
   pipelineValue: number
   avgTicket: number
 }
@@ -77,71 +74,66 @@ export function useAdminData(disableAutoRefresh = false) {
     return Math.min(score, 100)
   }, []) // Stable function, pas de dépendances
 
-  // Récupération données business - OPTIMIZED SELECT
+  // Récupération données business - MÉTRIQUES 100% FIABLES SUPABASE
   const fetchBusinessMetrics = useCallback(async () => {
     try {
-      // Contacts dernières 24h avec fallback intelligent - SELECT optimisé
-      const { data: contacts24h, error: error24h } = await supabase
+      // Tous les contacts pour métriques globales
+      const { data: allContacts, error: allError } = await supabase
         .from('contacts')
-        .select('id, created_at, budget, timeline') // Colonnes minimales pour métriques
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .select('id, created_at, budget, service, company, phone, message')
+        .order('created_at', { ascending: false })
 
-      // Si pas de contacts 24h, prendre les plus récents pour avoir des métriques
-      let contactsToUse = contacts24h
-      if ((!contacts24h || contacts24h.length === 0) && !error24h) {
-        const { data: recentContacts } = await supabase
-          .from('contacts')
-          .select('id, created_at, budget, timeline') // SELECT optimisé
-          .order('created_at', { ascending: false })
-          .limit(10)
-        contactsToUse = recentContacts
-      }
-
-      if (error24h) {
+      if (allError || !allContacts) {
         setBusinessMetrics({
-          visitors24h: 0,
-          devisSimulated: 0, 
           contactsSubmitted: 0,
-          conversionRate: 0,
+          leadsThisWeek: 0,
+          avgLeadScore: 0,
           pipelineValue: 0,
           avgTicket: 0
         })
         return
       }
 
-      // Pipeline value calculation
+      // Contacts dernière semaine (7 jours)
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      const leadsThisWeek = allContacts.filter(contact => 
+        new Date(contact.created_at) > oneWeekAgo
+      ).length
+
+      // Calcul lead score moyen (avec algorithme existant)
+      const avgLeadScore = allContacts.length > 0 
+        ? Math.round(allContacts.reduce((sum, contact) => sum + calculateLeadScore(contact), 0) / allContacts.length)
+        : 0
+
+      // Pipeline value - Budget estimé
       const budgetValues = {
         'less-5k': 2500,
         '5k-10k': 7500, 
         '10k-25k': 17500,
         '25k-50k': 37500,
         'more-50k': 75000,
-        'not-defined': 5000
+        'not-defined': 3000 // Plus conservateur
       }
 
-      const pipelineValue = contactsToUse?.reduce((total, contact) => {
+      const pipelineValue = allContacts.reduce((total, contact) => {
         return total + (budgetValues[contact.budget as keyof typeof budgetValues] || 0)
-      }, 0) || 0
+      }, 0)
 
-      // Métriques hybrides : Contacts (Supabase) + Analytics (GTM)
-      const contactsCount = contactsToUse?.length || 0
-      const gtmData = getGTMAnalytics()
+      const avgTicket = allContacts.length > 0 ? Math.round(pipelineValue / allContacts.length) : 0
       
       setBusinessMetrics({
-        visitors24h: gtmData.visitors24h,
-        devisSimulated: gtmData.devisSimulated,
-        contactsSubmitted: contactsCount,
-        conversionRate: gtmData.visitors24h > 0 ? (contactsCount / gtmData.visitors24h) * 100 : 0,
+        contactsSubmitted: allContacts.length,
+        leadsThisWeek,
+        avgLeadScore,
         pipelineValue,
-        avgTicket: contactsCount > 0 ? pipelineValue / contactsCount : 0
+        avgTicket
       })
     } catch (error) {
       // Fallback simple
       setBusinessMetrics({
-        visitors24h: 0,
-        devisSimulated: 0,
         contactsSubmitted: 0,
-        conversionRate: 0,
+        leadsThisWeek: 0,
+        avgLeadScore: 0,
         pipelineValue: 0,
         avgTicket: 0
       })

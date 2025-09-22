@@ -7,7 +7,7 @@ import { slideUp, staggerContainer, staggerItem, fadeIn } from '@/lib/motion-var
 import { DevisModalLazy } from '@/lib/performance-utils'
 import Breadcrumb from '@/components/breadcrumb'
 import FAQ from '@/components/faq'
-import { faqData } from '@/lib/faq-data'
+import { useDynamicFAQ } from '@/hooks/use-dynamic-faq'
 
 const services = [
   {
@@ -80,6 +80,9 @@ const services = [
 
 export default function ServicesPage() {
   const [isDevisModalOpen, setIsDevisModalOpen] = useState(false)
+  
+  // FAQ dynamique depuis Supabase
+  const { faqItems: dynamicFAQ, loading: faqLoading } = useDynamicFAQ('services')
 
   return (
     <>
@@ -203,7 +206,9 @@ export default function ServicesPage() {
         {/* Section FAQ */}
         <section id="faq" className="py-24 bg-gray-50">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <FAQ items={faqData} section="services" />
+            {!faqLoading && (
+              <FAQ items={dynamicFAQ} section="services" />
+            )}
           </div>
         </section>
 

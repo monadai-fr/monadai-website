@@ -9,6 +9,7 @@ interface FAQItem {
   readonly id: string
   readonly question: string
   readonly answer: string
+  readonly click_count?: number
 }
 
 interface FAQProps {

@@ -35,26 +35,10 @@ export const ANALYTICS_EVENTS = {
 
 export function useAnalytics() {
   
-  // Push vers dataLayer (GTM/GA4)
-  const pushToDataLayer = (eventName: string, eventData?: Record<string, any>) => {
-    if (typeof window !== 'undefined' && window.dataLayer) {
-      window.dataLayer.push({
-        event: eventName,
-        eventName,
-        eventData,
-        timestamp: new Date().toISOString(),
-        ...eventData
-      })
-    }
-  }
-
-  // Tracking hybride Vercel + GTM
+  // Tracking simple Vercel Analytics uniquement
   const trackEvent = (eventName: string, eventData?: Record<string, any>) => {
-    // Vercel Analytics (simple)
+    // Vercel Analytics - simple et fiable
     track(eventName, eventData as any)
-    
-    // GTM/GA4 (détaillé)
-    pushToDataLayer(eventName, eventData)
   }
 
   // Méthodes business spécifiques MonadAI
@@ -88,8 +72,6 @@ export function useAnalytics() {
     trackDevis,
     trackFAQ, 
     trackContact,
-    trackProject,
-    // Accès direct si besoin
-    pushToDataLayer
+    trackProject
   }
 }
