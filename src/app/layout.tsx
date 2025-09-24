@@ -3,11 +3,10 @@ import { Inter } from "next/font/google";
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import "./globals.css";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/footer";
 import SchemaOrg from "@/components/schema-org";
 import PerformanceInit from "@/components/performance-init";
 import GTM, { GTMNoscript } from "@/components/gtm";
+import ConditionalLayout from "@/components/conditional-layout";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -101,13 +100,9 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <GTMNoscript gtmId="GTM-KQ7X36DP" />
         <PerformanceInit />
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-1 pt-16">
-            {children}
-          </main>
-          <Footer />
-        </div>
+        <ConditionalLayout>
+          {children}
+        </ConditionalLayout>
         <Analytics />
         <SpeedInsights />
       </body>
