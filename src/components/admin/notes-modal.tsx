@@ -186,10 +186,10 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
                       onChange={(e) => setNewNote(prev => ({ ...prev, type: e.target.value as any }))}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-sapin focus:border-green-sapin"
                     >
-                      <option value="note">📝 Note libre</option>
-                      <option value="call">📞 Appel téléphonique</option>
-                      <option value="email">✉️ Email</option>
-                      <option value="meeting">🤝 Rendez-vous</option>
+                      <option value="note">Note libre</option>
+                      <option value="call">Appel téléphonique</option>
+                      <option value="email">Email</option>
+                      <option value="meeting">Rendez-vous</option>
                     </select>
                   </div>
 

@@ -47,7 +47,11 @@ export function useImageUpload() {
 
       if (uploadError) {
         console.error('Erreur upload:', uploadError)
-        setError('Erreur lors de l\'upload')
+        if (uploadError.message?.includes('Bucket not found')) {
+          setError('Bucket Storage non configuré. Vérifiez configuration Supabase.')
+        } else {
+          setError(`Erreur upload: ${uploadError.message}`)
+        }
         return null
       }
 

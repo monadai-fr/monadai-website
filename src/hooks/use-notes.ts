@@ -193,10 +193,10 @@ export function useNotes(leadId: string) {
   // Helper : Formater type de note
   const formatNoteType = (type: ContactNote['type']): string => {
     const types = {
-      call: '📞 Appel',
-      email: '✉️ Email', 
-      meeting: '🤝 RDV',
-      note: '📝 Note'
+      call: 'Appel',
+      email: 'Email', 
+      meeting: 'RDV',
+      note: 'Note'
     }
     return types[type] || type
   }
