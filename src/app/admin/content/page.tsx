@@ -7,6 +7,8 @@ import { useCMSProjects, type ProjectFormData } from '@/hooks/use-cms-projects'
 import { useCMSFAQ, type FAQFormData } from '@/hooks/use-cms-faq'
 import { useCMSEmailTemplates, type EmailTemplateFormData } from '@/hooks/use-cms-email-templates'
 import ImageUpload from '@/components/admin/image-upload'
+import CreateProjectModal from '@/components/admin/create-project-modal'
+import CreateFAQModal from '@/components/admin/create-faq-modal'
 import Image from 'next/image'
 
 type TabType = 'projects' | 'faq' | 'templates'
@@ -16,6 +18,10 @@ export default function AdminContent() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
   const [isEditingProject, setIsEditingProject] = useState(false)
   const [editingProjectData, setEditingProjectData] = useState<ProjectFormData | null>(null)
+  
+  // États modales création
+  const [isCreatingProject, setIsCreatingProject] = useState(false)
+  const [isCreatingFAQ, setIsCreatingFAQ] = useState(false)
 
   // Hooks CMS
   const { 
@@ -224,7 +230,7 @@ export default function AdminContent() {
                 </motion.h2>
                 <motion.button
                   variants={staggerItem}
-                  onClick={() => alert('Création nouveau projet - Interface à développer')}
+                  onClick={() => setIsCreatingProject(true)}
                   className="bg-green-sapin text-white px-4 py-2 rounded-lg font-medium hover:bg-green-sapin-light transition-colors"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -327,13 +333,13 @@ export default function AdminContent() {
                           transition={{ duration: 0.3 }}
                           className="mt-4 pt-4 border-t border-gray-200 space-y-2"
                         >
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="flex space-x-2">
                             <motion.button
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleQuickEdit(project)
                               }}
-                              className="bg-gray-100 text-gray-700 py-2 rounded text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center"
+                              className="bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm font-medium hover:bg-gray-200 transition-colors flex items-center"
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                             >
@@ -348,7 +354,7 @@ export default function AdminContent() {
                                 e.stopPropagation()
                                 toggleVisibility(project.id)
                               }}
-                              className={`py-2 rounded text-sm font-medium transition-colors flex items-center justify-center ${
+                              className={`px-3 py-2 rounded text-sm font-medium transition-colors flex items-center ${
                                 project.is_visible 
                                   ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
                                   : 'bg-green-sapin text-white hover:bg-green-sapin-light'
@@ -373,7 +379,7 @@ export default function AdminContent() {
                                   deleteProject(project.id)
                                 }
                               }}
-                              className="bg-gray-100 text-gray-700 py-2 rounded text-sm font-medium hover:bg-red-50 hover:text-red-600 transition-colors flex items-center justify-center"
+                              className="bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm font-medium hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                             >
@@ -419,7 +425,7 @@ export default function AdminContent() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-semibold text-gray-900">FAQ Analytics & Management</h3>
                 <button 
-                  onClick={() => alert('Création FAQ - Interface à développer')}
+                  onClick={() => setIsCreatingFAQ(true)}
                   className="bg-green-sapin text-white px-4 py-2 rounded-lg font-medium hover:bg-green-sapin-light transition-colors"
                 >
                   + Nouvelle FAQ
@@ -465,7 +471,7 @@ export default function AdminContent() {
                               e.stopPropagation()
                               handleEditFAQ(faq.id)
                             }}
-                            className="text-blue-600 hover:text-blue-700 p-1"
+                            className="text-gray-600 hover:text-green-sapin p-1"
                             title="Modifier FAQ"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -480,7 +486,7 @@ export default function AdminContent() {
                                 handleDeleteFAQ(faq.id)
                               }
                             }}
-                            className="text-red-600 hover:text-red-700 p-1"
+                            className="text-gray-600 hover:text-red-600 p-1"
                             title="Supprimer FAQ"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -560,7 +566,7 @@ export default function AdminContent() {
                               e.stopPropagation()
                               handleEditTemplate(template.id)
                             }}
-                            className="text-blue-600 hover:text-blue-700 p-1"
+                            className="text-gray-600 hover:text-green-sapin p-1"
                             title="Modifier template"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -574,7 +580,7 @@ export default function AdminContent() {
                                 handleDeleteTemplate(template.id)
                               }
                             }}
-                            className="text-red-600 hover:text-red-700 p-1"
+                            className="text-gray-600 hover:text-red-600 p-1"
                             title="Supprimer template"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -757,6 +763,19 @@ export default function AdminContent() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Modales Création */}
+      <CreateProjectModal 
+        isOpen={isCreatingProject}
+        onClose={() => setIsCreatingProject(false)}
+        onSubmit={createProject}
+      />
+
+      <CreateFAQModal 
+        isOpen={isCreatingFAQ}
+        onClose={() => setIsCreatingFAQ(false)}
+        onSubmit={createFAQ}
+      />
     </div>
   )
 }

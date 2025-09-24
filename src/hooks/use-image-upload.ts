@@ -32,6 +32,31 @@ export function useImageUpload() {
         return null
       }
 
+      // SOLUTION TEMPORAIRE : Créer bucket s'il n'existe pas
+      try {
+        const { data: buckets } = await supabase.storage.listBuckets()
+        const bucketExists = buckets?.some(bucket => bucket.name === 'project-images')
+
+        if (!bucketExists) {
+          // Tentative création automatique du bucket
+          const { error: bucketError } = await supabase.storage.createBucket('project-images', { 
+            public: true,
+            allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+            fileSizeLimit: 2097152 // 2MB
+          })
+          
+          if (bucketError) {
+            console.error('Erreur création bucket:', bucketError)
+            setError('Configuration Storage requise manuellement. Consultez STORAGE-SETUP.md')
+            return null
+          }
+        }
+      } catch (bucketError) {
+        console.error('Erreur vérification bucket:', bucketError)
+        setError('Problème configuration Storage. Voir STORAGE-SETUP.md')
+        return null
+      }
+
       // Nom de fichier unique
       const fileExt = file.name.split('.').pop()
       const fileName = `${projectSlug}-${Date.now()}.${fileExt}`
@@ -47,11 +72,7 @@ export function useImageUpload() {
 
       if (uploadError) {
         console.error('Erreur upload:', uploadError)
-        if (uploadError.message?.includes('Bucket not found')) {
-          setError('Bucket Storage non configuré. Vérifiez configuration Supabase.')
-        } else {
-          setError(`Erreur upload: ${uploadError.message}`)
-        }
+        setError(`Configuration Storage requise. Voir STORAGE-SETUP.md`)
         return null
       }
 
