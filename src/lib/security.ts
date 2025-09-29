@@ -89,28 +89,37 @@ export function validateLinks(text: string): SecurityValidation {
   }
 }
 
-// Nouvelle fonction : Validation pattern nom suspect
+// Nouvelle fonction : Validation pattern nom suspect (améliorée anti-faux positifs)
 export function validateSuspiciousName(name: string, email: string): SecurityValidation {
   const blockedReasons: string[] = []
   let risk: 'low' | 'medium' | 'high' = 'low'
   
   const cleanName = name.toLowerCase().replace(/[^a-z]/g, '')
   const emailPart = email.split('@')[0].toLowerCase().replace(/[^a-z]/g, '')
+  const domain = email.split('@')[1]?.toLowerCase()
   
-  // Pattern suspect : même base + suffixe (ex: rodia / rodiapm)
-  if (cleanName.length >= 4 && emailPart.length >= 4) {
-    const nameBase = cleanName.substring(0, 4)
-    const emailBase = emailPart.substring(0, 4)
+  // Vérification stricte seulement pour domaines suspects ou cas évidents de bots
+  const requiresStrictValidation = (
+    domain && SUSPICIOUS_DOMAINS.includes(domain) ||   // Domaine temporaire/malveillant
+    emailPart.includes('temp') ||                      // Email contient 'temp'
+    emailPart.includes('test') ||                      // Email contient 'test'
+    emailPart.match(/\d{3,}$/)                        // Email se termine par 3+ chiffres
+  )
+  
+  // Pattern automatisé détecté seulement pour domaines suspects + critères stricts
+  if (requiresStrictValidation && cleanName.length >= 6 && emailPart.length >= 6) {
+    const namePrefix = cleanName.substring(0, 4)
+    const emailPrefix = emailPart.substring(0, 4)
     
-    if (nameBase === emailBase && cleanName !== emailPart) {
-      // Même base mais différent = pattern suspect
-      blockedReasons.push('Pattern nom/email suspect détecté')
+    if (namePrefix === emailPrefix && cleanName !== emailPart) {
+      // Pour domaines suspects, pattern identique = très suspect
+      blockedReasons.push('Pattern automatisé détecté')
       risk = 'high'
     }
   }
   
-  // Noms génériques spam
-  const spamNames = ['test', 'admin', 'user', 'guest', 'demo', 'sample', 'fake']
+  // Noms génériques spam (inchangé)
+  const spamNames = ['test', 'admin', 'user', 'guest', 'demo', 'sample', 'fake', 'example']
   if (spamNames.includes(cleanName)) {
     blockedReasons.push('Nom générique suspect')
     risk = 'high'
