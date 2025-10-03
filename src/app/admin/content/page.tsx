@@ -9,6 +9,7 @@ import { useCMSEmailTemplates, type EmailTemplateFormData } from '@/hooks/use-cm
 import ImageUpload from '@/components/admin/image-upload'
 import CreateProjectModal from '@/components/admin/create-project-modal'
 import CreateFAQModal from '@/components/admin/create-faq-modal'
+import CreateTemplateModal from '@/components/admin/create-template-modal'
 import EditFAQModal from '@/components/admin/edit-faq-modal'
 import EditTemplateModal from '@/components/admin/edit-template-modal'
 import Image from 'next/image'
@@ -24,6 +25,7 @@ export default function AdminContent() {
   // États modales création
   const [isCreatingProject, setIsCreatingProject] = useState(false)
   const [isCreatingFAQ, setIsCreatingFAQ] = useState(false)
+  const [isCreatingTemplate, setIsCreatingTemplate] = useState(false)
   
   // États modales édition
   const [editingFAQ, setEditingFAQ] = useState<{ isOpen: boolean; faq: any }>({ isOpen: false, faq: null })
@@ -52,6 +54,7 @@ export default function AdminContent() {
     templates, 
     loading: templatesLoading,
     activeTemplates,
+    createTemplate,
     deleteTemplate
   } = useCMSEmailTemplates()
 
@@ -537,7 +540,7 @@ export default function AdminContent() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-semibold text-gray-900">Templates Email</h3>
                 <button 
-                  onClick={() => alert('Création template - Interface à développer')}
+                  onClick={() => setIsCreatingTemplate(true)}
                   className="bg-green-sapin text-white px-4 py-2 rounded-lg font-medium hover:bg-green-sapin-light transition-colors"
                 >
                   + Nouveau Template
@@ -781,6 +784,12 @@ export default function AdminContent() {
         isOpen={isCreatingFAQ}
         onClose={() => setIsCreatingFAQ(false)}
         onSubmit={createFAQ}
+      />
+
+      <CreateTemplateModal 
+        isOpen={isCreatingTemplate}
+        onClose={() => setIsCreatingTemplate(false)}
+        onSubmit={createTemplate}
       />
 
       {/* Modales Édition */}
