@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getToken } from 'next-auth/jwt'
+import { ADMIN_EMAIL } from '@/lib/auth'
 
 /**
- * Middleware sécurité MonadAI - Rate limiting et protection
+ * Middleware sécurité MonadAI - Rate limiting et protection admin
  * Niveau Professional conforme expertise cybersécurité
  */
 
@@ -49,9 +51,39 @@ function isRateLimited(ip: string): boolean {
   return record.count > RATE_LIMIT.maxRequests
 }
 
-export function middleware(request: NextRequest) {
-  // SEULEMENT rate limiting API contact - HEADERS DÉSACTIVÉS POUR TEST
-  if (request.nextUrl.pathname === RATE_LIMIT.contactPath) {
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // 1. Protection routes admin/CMS - Vérification authentification
+  if (pathname.startsWith('/api/admin') || 
+      (pathname.startsWith('/api/cms') && request.method !== 'GET')) {
+    
+    try {
+      const token = await getToken({ 
+        req: request, 
+        secret: process.env.NEXTAUTH_SECRET 
+      })
+
+      // Vérifier token et email admin
+      if (!token || token.email !== ADMIN_EMAIL) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: 'Non autorisé. Authentification admin requise.' 
+          },
+          { status: 401 }
+        )
+      }
+    } catch (error) {
+      return NextResponse.json(
+        { success: false, message: 'Erreur authentification' },
+        { status: 401 }
+      )
+    }
+  }
+
+  // 2. Rate limiting API contact
+  if (pathname === RATE_LIMIT.contactPath) {
     const clientIP = getClientIP(request)
     
     if (isRateLimited(clientIP)) {
@@ -64,7 +96,7 @@ export function middleware(request: NextRequest) {
         { 
           status: 429,
           headers: {
-            'Retry-After': '600', // 10 minutes
+            'Retry-After': '600',
             'X-RateLimit-Limit': RATE_LIMIT.maxRequests.toString(),
             'X-RateLimit-Remaining': '0'
           }
@@ -73,14 +105,13 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Return response sans headers pour test
   return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    '/api/contact'
-    // COMPLÈTEMENT DÉSACTIVÉ POUR TEST
-    // '/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest).*)'
+    '/api/contact',
+    '/api/admin/:path*',
+    '/api/cms/:path*'
   ]
 }

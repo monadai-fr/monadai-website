@@ -59,32 +59,29 @@ export function useCMSProjects() {
     }
   }
 
-  // Ajouter nouveau projet
+  // Ajouter nouveau projet via API
   const createProject = async (data: ProjectFormData): Promise<boolean> => {
     setError(null)
     
     try {
-      // Générer slug automatique
-      const slug = data.title.toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^\w\s-]/g, '')
-        .replace(/[\s_-]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-
-      const { data: newProject, error: createError } = await supabase
-        .from('projects')
-        .insert([{
-          slug,
+      const response = await fetch('/api/cms/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           ...data,
           sort_order: projects.length + 1
-        }])
-        .select()
-        .single()
+        })
+      })
 
-      if (createError) throw createError
+      const result = await response.json()
+
+      if (!result.success) {
+        setError(result.message || 'Erreur lors de la création du projet')
+        return false
+      }
       
-      setProjects(prev => [...prev, newProject])
+      // Rafraîchir pour obtenir données à jour
+      await fetchProjects()
       return true
     } catch (err) {
       setError('Erreur lors de la création du projet')
@@ -93,25 +90,26 @@ export function useCMSProjects() {
     }
   }
 
-  // Modifier projet existant
+  // Modifier projet existant via API
   const updateProject = async (id: string, data: Partial<ProjectFormData>): Promise<boolean> => {
     setError(null)
     
     try {
-      const { data: updatedProject, error: updateError } = await supabase
-        .from('projects')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single()
+      const response = await fetch(`/api/cms/projects/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
 
-      if (updateError) throw updateError
-      
-      setProjects(prev => 
-        prev.map(project => 
-          project.id === id ? updatedProject : project
-        )
-      )
+      const result = await response.json()
+
+      if (!result.success) {
+        setError(result.message || 'Erreur lors de la mise à jour')
+        return false
+      }
+
+      // Rafraîchir pour obtenir données à jour
+      await fetchProjects()
       return true
     } catch (err) {
       setError('Erreur lors de la mise à jour')
@@ -120,17 +118,21 @@ export function useCMSProjects() {
     }
   }
 
-  // Supprimer projet
+  // Supprimer projet via API
   const deleteProject = async (id: string): Promise<boolean> => {
     setError(null)
     
     try {
-      const { error: deleteError } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', id)
+      const response = await fetch(`/api/cms/projects/${id}`, {
+        method: 'DELETE'
+      })
 
-      if (deleteError) throw deleteError
+      const result = await response.json()
+
+      if (!result.success) {
+        setError(result.message || 'Erreur lors de la suppression')
+        return false
+      }
       
       setProjects(prev => prev.filter(project => project.id !== id))
       return true

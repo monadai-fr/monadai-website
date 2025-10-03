@@ -54,23 +54,29 @@ export function useCMSFAQ() {
     }
   }
 
-  // Ajouter nouvelle FAQ
+  // Ajouter nouvelle FAQ via API
   const createFAQ = async (data: FAQFormData): Promise<boolean> => {
     setError(null)
     
     try {
-      const { data: newFAQ, error: createError } = await supabase
-        .from('faq_items')
-        .insert([{
+      const response = await fetch('/api/cms/faq', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           ...data,
           sort_order: faqItems.filter(f => f.section === data.section).length + 1
-        }])
-        .select()
-        .single()
+        })
+      })
 
-      if (createError) throw createError
+      const result = await response.json()
+
+      if (!result.success) {
+        setError(result.message || 'Erreur lors de la création')
+        return false
+      }
       
-      setFaqItems(prev => [...prev, newFAQ])
+      // Rafraîchir pour obtenir données à jour
+      await fetchFAQ()
       return true
     } catch (err) {
       setError('Erreur lors de la création')
@@ -79,25 +85,26 @@ export function useCMSFAQ() {
     }
   }
 
-  // Modifier FAQ existante
+  // Modifier FAQ existante via API
   const updateFAQ = async (id: string, data: Partial<FAQFormData>): Promise<boolean> => {
     setError(null)
     
     try {
-      const { data: updatedFAQ, error: updateError } = await supabase
-        .from('faq_items')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single()
+      const response = await fetch(`/api/cms/faq/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
 
-      if (updateError) throw updateError
-      
-      setFaqItems(prev => 
-        prev.map(faq => 
-          faq.id === id ? updatedFAQ : faq
-        )
-      )
+      const result = await response.json()
+
+      if (!result.success) {
+        setError(result.message || 'Erreur lors de la modification')
+        return false
+      }
+
+      // Rafraîchir pour obtenir données à jour
+      await fetchFAQ()
       return true
     } catch (err) {
       setError('Erreur lors de la modification')
@@ -106,17 +113,21 @@ export function useCMSFAQ() {
     }
   }
 
-  // Supprimer FAQ
+  // Supprimer FAQ via API
   const deleteFAQ = async (id: string): Promise<boolean> => {
     setError(null)
     
     try {
-      const { error: deleteError } = await supabase
-        .from('faq_items')
-        .delete()
-        .eq('id', id)
+      const response = await fetch(`/api/cms/faq/${id}`, {
+        method: 'DELETE'
+      })
 
-      if (deleteError) throw deleteError
+      const result = await response.json()
+
+      if (!result.success) {
+        setError(result.message || 'Erreur lors de la suppression')
+        return false
+      }
       
       setFaqItems(prev => prev.filter(faq => faq.id !== id))
       return true

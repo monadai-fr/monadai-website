@@ -51,20 +51,26 @@ export function useCMSEmailTemplates() {
     }
   }
 
-  // Créer nouveau template
+  // Créer nouveau template via API
   const createTemplate = async (data: EmailTemplateFormData): Promise<boolean> => {
     setError(null)
     
     try {
-      const { data: newTemplate, error: createError } = await supabase
-        .from('email_templates')
-        .insert([data])
-        .select()
-        .single()
+      const response = await fetch('/api/cms/email-templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
 
-      if (createError) throw createError
+      const result = await response.json()
+
+      if (!result.success) {
+        setError(result.message || 'Erreur lors de la création')
+        return false
+      }
       
-      setTemplates(prev => [newTemplate, ...prev])
+      // Rafraîchir pour obtenir données à jour
+      await fetchTemplates()
       return true
     } catch (err) {
       setError('Erreur lors de la création')
@@ -73,25 +79,26 @@ export function useCMSEmailTemplates() {
     }
   }
 
-  // Modifier template
+  // Modifier template via API
   const updateTemplate = async (id: string, data: Partial<EmailTemplateFormData>): Promise<boolean> => {
     setError(null)
     
     try {
-      const { data: updatedTemplate, error: updateError } = await supabase
-        .from('email_templates')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single()
+      const response = await fetch(`/api/cms/email-templates/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
 
-      if (updateError) throw updateError
-      
-      setTemplates(prev => 
-        prev.map(template => 
-          template.id === id ? updatedTemplate : template
-        )
-      )
+      const result = await response.json()
+
+      if (!result.success) {
+        setError(result.message || 'Erreur lors de la modification')
+        return false
+      }
+
+      // Rafraîchir pour obtenir données à jour
+      await fetchTemplates()
       return true
     } catch (err) {
       setError('Erreur lors de la modification')
@@ -100,17 +107,21 @@ export function useCMSEmailTemplates() {
     }
   }
 
-  // Supprimer template
+  // Supprimer template via API
   const deleteTemplate = async (id: string): Promise<boolean> => {
     setError(null)
     
     try {
-      const { error: deleteError } = await supabase
-        .from('email_templates')
-        .delete()
-        .eq('id', id)
+      const response = await fetch(`/api/cms/email-templates/${id}`, {
+        method: 'DELETE'
+      })
 
-      if (deleteError) throw deleteError
+      const result = await response.json()
+
+      if (!result.success) {
+        setError(result.message || 'Erreur lors de la suppression')
+        return false
+      }
       
       setTemplates(prev => prev.filter(template => template.id !== id))
       return true

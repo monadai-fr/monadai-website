@@ -9,6 +9,8 @@ import { useCMSEmailTemplates, type EmailTemplateFormData } from '@/hooks/use-cm
 import ImageUpload from '@/components/admin/image-upload'
 import CreateProjectModal from '@/components/admin/create-project-modal'
 import CreateFAQModal from '@/components/admin/create-faq-modal'
+import EditFAQModal from '@/components/admin/edit-faq-modal'
+import EditTemplateModal from '@/components/admin/edit-template-modal'
 import Image from 'next/image'
 
 type TabType = 'projects' | 'faq' | 'templates'
@@ -22,6 +24,10 @@ export default function AdminContent() {
   // États modales création
   const [isCreatingProject, setIsCreatingProject] = useState(false)
   const [isCreatingFAQ, setIsCreatingFAQ] = useState(false)
+  
+  // États modales édition
+  const [editingFAQ, setEditingFAQ] = useState<{ isOpen: boolean; faq: any }>({ isOpen: false, faq: null })
+  const [editingTemplate, setEditingTemplate] = useState<{ isOpen: boolean; template: any }>({ isOpen: false, template: null })
 
   // Hooks CMS
   const { 
@@ -141,32 +147,36 @@ export default function AdminContent() {
   }
 
   // ================================
-  // HANDLERS FAQ - TOUS FONCTIONNELS
+  // HANDLERS FAQ - COMPLETS
   // ================================
 
-  const handleEditFAQ = (faqId: string) => {
-    alert(`Édition FAQ - Interface complète à développer. FAQ ID: ${faqId}`)
+  const handleEditFAQ = (faq: any) => {
+    setEditingFAQ({ isOpen: true, faq })
   }
 
-  const handleDeleteFAQ = async (faqId: string) => {
-    const success = await deleteFAQ(faqId)
-    if (!success) {
-      alert('Erreur lors de la suppression de la FAQ')
+  const handleDeleteFAQ = async (faqId: string, faqQuestion: string) => {
+    if (window.confirm(`Supprimer la FAQ "${faqQuestion}" ?`)) {
+      const success = await deleteFAQ(faqId)
+      if (!success) {
+        alert('Erreur lors de la suppression de la FAQ')
+      }
     }
   }
 
   // ================================
-  // HANDLERS TEMPLATES - TOUS FONCTIONNELS
+  // HANDLERS TEMPLATES - COMPLETS
   // ================================
 
-  const handleEditTemplate = (templateId: string) => {
-    alert(`Édition Template - Interface complète à développer. Template ID: ${templateId}`)
+  const handleEditTemplate = (template: any) => {
+    setEditingTemplate({ isOpen: true, template })
   }
 
-  const handleDeleteTemplate = async (templateId: string) => {
-    const success = await deleteTemplate(templateId)
-    if (!success) {
-      alert('Erreur lors de la suppression du template')
+  const handleDeleteTemplate = async (templateId: string, templateName: string) => {
+    if (window.confirm(`Supprimer le template "${templateName}" ?`)) {
+      const success = await deleteTemplate(templateId)
+      if (!success) {
+        alert('Erreur lors de la suppression du template')
+      }
     }
   }
 
@@ -469,7 +479,7 @@ export default function AdminContent() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation()
-                              handleEditFAQ(faq.id)
+                              handleEditFAQ(faq)
                             }}
                             className="text-gray-600 hover:text-green-sapin p-1"
                             title="Modifier FAQ"
@@ -482,9 +492,7 @@ export default function AdminContent() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation()
-                              if (confirm(`Supprimer la FAQ "${faq.question}" ?`)) {
-                                handleDeleteFAQ(faq.id)
-                              }
+                              handleDeleteFAQ(faq.id, faq.question)
                             }}
                             className="text-gray-600 hover:text-red-600 p-1"
                             title="Supprimer FAQ"
@@ -564,7 +572,7 @@ export default function AdminContent() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation()
-                              handleEditTemplate(template.id)
+                              handleEditTemplate(template)
                             }}
                             className="text-gray-600 hover:text-green-sapin p-1"
                             title="Modifier template"
@@ -576,9 +584,7 @@ export default function AdminContent() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation()
-                              if (confirm(`Supprimer le template "${template.name}" ?`)) {
-                                handleDeleteTemplate(template.id)
-                              }
+                              handleDeleteTemplate(template.id, template.name)
                             }}
                             className="text-gray-600 hover:text-red-600 p-1"
                             title="Supprimer template"
@@ -776,6 +782,31 @@ export default function AdminContent() {
         onClose={() => setIsCreatingFAQ(false)}
         onSubmit={createFAQ}
       />
+
+      {/* Modales Édition */}
+      {editingFAQ.isOpen && editingFAQ.faq && (
+        <EditFAQModal
+          isOpen={editingFAQ.isOpen}
+          onClose={() => setEditingFAQ({ isOpen: false, faq: null })}
+          faq={editingFAQ.faq}
+          onSuccess={() => {
+            setEditingFAQ({ isOpen: false, faq: null })
+            // Le hook se rafraîchit automatiquement
+          }}
+        />
+      )}
+
+      {editingTemplate.isOpen && editingTemplate.template && (
+        <EditTemplateModal
+          isOpen={editingTemplate.isOpen}
+          onClose={() => setEditingTemplate({ isOpen: false, template: null })}
+          template={editingTemplate.template}
+          onSuccess={() => {
+            setEditingTemplate({ isOpen: false, template: null })
+            // Le hook se rafraîchit automatiquement
+          }}
+        />
+      )}
     </div>
   )
 }
