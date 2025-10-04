@@ -85,30 +85,26 @@ export default function CreateProjectModal({ isOpen, onClose, onSubmit }: Create
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <motion.div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
           <motion.div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-
-          <motion.div
-            className="fixed inset-0 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-          >
-            <div 
-              ref={focusRef}
-              className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
+            ref={focusRef}
+            className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-2 sm:mx-4"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
               aria-labelledby="create-project-modal-title"
-            >
-              <div className="p-6 border-b border-gray-200">
+          >
+            <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <h3 id="create-project-modal-title" className="text-xl font-bold text-gray-900">Nouveau Projet SaaS</h3>
                   <button
@@ -303,9 +299,8 @@ export default function CreateProjectModal({ isOpen, onClose, onSubmit }: Create
                   </motion.button>
                 </div>
               </form>
-            </div>
+            </motion.div>
           </motion.div>
-        </>
       )}
     </AnimatePresence>
   )

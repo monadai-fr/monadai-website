@@ -138,7 +138,7 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
         >
           <motion.div
             ref={focusRef}
-            className="bg-white rounded-lg shadow-2xl max-w-xs sm:max-w-2xl md:max-w-4xl w-full max-h-[90vh] flex flex-col mx-2 sm:mx-4"
+            className="bg-white rounded-xl shadow-2xl max-w-xs sm:max-w-2xl md:max-w-4xl w-full max-h-[90vh] flex flex-col mx-2 sm:mx-4"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
