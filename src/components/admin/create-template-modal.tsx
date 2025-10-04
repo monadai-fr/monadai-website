@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useFocusTrap } from '@/hooks/use-focus-trap'
 import type { EmailTemplateFormData } from '@/hooks/use-cms-email-templates'
 
@@ -23,7 +23,19 @@ export default function CreateTemplateModal({ isOpen, onClose, onSubmit }: Creat
   const [showPreview, setShowPreview] = useState(false)
   const [newVariable, setNewVariable] = useState('')
   
-  const focusRef = useFocusTrap(isOpen)
+  const focusRef = useFocusTrap(isOpen, onClose)
+
+  // Empêcher scroll background
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -140,11 +152,14 @@ export default function CreateTemplateModal({ isOpen, onClose, onSubmit }: Creat
               ref={focusRef}
               className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="create-template-modal-title"
             >
-              <div className="p-6 border-b border-gray-100">
+              <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Nouveau Template Email</h3>
+                    <h3 id="create-template-modal-title" className="text-xl font-bold text-gray-900">Nouveau Template Email</h3>
                     <p className="text-sm text-gray-600 mt-1">Créez un template réutilisable pour vos emails</p>
                   </div>
                   <div className="flex items-center space-x-3">

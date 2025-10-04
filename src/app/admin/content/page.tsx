@@ -1,11 +1,12 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { staggerContainer, staggerItem } from '@/lib/motion-variants'
 import { useCMSProjects, type ProjectFormData } from '@/hooks/use-cms-projects'
 import { useCMSFAQ, type FAQFormData } from '@/hooks/use-cms-faq'
 import { useCMSEmailTemplates, type EmailTemplateFormData } from '@/hooks/use-cms-email-templates'
+import { useFocusTrap } from '@/hooks/use-focus-trap'
 import ImageUpload from '@/components/admin/image-upload'
 import CreateProjectModal from '@/components/admin/create-project-modal'
 import CreateFAQModal from '@/components/admin/create-faq-modal'
@@ -21,6 +22,9 @@ export default function AdminContent() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
   const [isEditingProject, setIsEditingProject] = useState(false)
   const [editingProjectData, setEditingProjectData] = useState<ProjectFormData | null>(null)
+  
+  // Focus trap pour Edit Project modal
+  const editProjectFocusRef = useFocusTrap(isEditingProject, () => setIsEditingProject(false))
   
   // États modales création
   const [isCreatingProject, setIsCreatingProject] = useState(false)
@@ -148,6 +152,18 @@ export default function AdminContent() {
       setEditingProjectData(null)
     }
   }
+
+  // Empêcher scroll background pendant Edit Project
+  useEffect(() => {
+    if (isEditingProject) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isEditingProject])
 
   // ================================
   // HANDLERS FAQ - COMPLETS
@@ -645,10 +661,16 @@ export default function AdminContent() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
             >
-              <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                <div className="p-6 border-b border-gray-100">
+              <div 
+                ref={editProjectFocusRef}
+                className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="edit-project-modal-title"
+              >
+                <div className="p-6 border-b border-gray-200">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-gray-900">Modifier Projet</h3>
+                    <h3 id="edit-project-modal-title" className="text-xl font-bold text-gray-900">Modifier Projet</h3>
                     <button
                       onClick={() => setIsEditingProject(false)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -745,6 +767,52 @@ export default function AdminContent() {
                         placeholder="IA Analytics, Cybersécurité..."
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Stack technique</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {editingProjectData.tech_stack.map((tech) => (
+                        <span 
+                          key={tech}
+                          className="inline-flex items-center bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-sm"
+                        >
+                          {tech}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingProjectData(prev => prev ? {
+                                ...prev,
+                                tech_stack: prev.tech_stack.filter(t => t !== tech)
+                              } : null)
+                            }}
+                            className="ml-1 text-gray-500 hover:text-red-500"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Ajouter technologie... (Entrée pour ajouter)"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-green-sapin focus:outline-none"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          const newTech = e.currentTarget.value.trim()
+                          if (newTech && editingProjectData && !editingProjectData.tech_stack.includes(newTech)) {
+                            setEditingProjectData(prev => prev ? {
+                              ...prev,
+                              tech_stack: [...prev.tech_stack, newTech]
+                            } : null)
+                            e.currentTarget.value = ''
+                          }
+                        }
+                      }}
+                    />
                   </div>
 
                   <div className="flex justify-end space-x-3 pt-4">

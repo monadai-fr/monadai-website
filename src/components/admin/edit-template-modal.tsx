@@ -25,7 +25,19 @@ export default function EditTemplateModal({ isOpen, onClose, template, onSuccess
   const [error, setError] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
   
-  const focusRef = useFocusTrap(isOpen)
+  const focusRef = useFocusTrap(isOpen, onClose)
+
+  // Empêcher scroll background
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   // Reset form quand le template change
   useEffect(() => {
@@ -98,11 +110,14 @@ export default function EditTemplateModal({ isOpen, onClose, template, onSuccess
               ref={focusRef}
               className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="edit-template-modal-title"
             >
-              <div className="p-6 border-b border-gray-100">
+              <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Modifier Template Email</h3>
+                    <h3 id="edit-template-modal-title" className="text-xl font-bold text-gray-900">Modifier Template Email</h3>
                     <p className="text-sm text-gray-600 mt-1">
                       Template: <span className="font-medium">{template.name}</span>
                     </p>

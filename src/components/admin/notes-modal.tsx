@@ -33,7 +33,7 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
   const [editingNote, setEditingNote] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
 
-  const focusRef = useFocusTrap(isOpen)
+  const focusRef = useFocusTrap(isOpen, onClose)
   
   // Empêcher scroll background quand modal ouverte
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -138,17 +138,20 @@ export default function NotesModal({ isOpen, onClose, leadId, leadName }: NotesM
         >
           <motion.div
             ref={focusRef}
-            className="bg-white rounded-lg max-w-xs sm:max-w-2xl md:max-w-4xl w-full max-h-[90vh] flex flex-col mx-2 sm:mx-4"
+            className="bg-white rounded-lg shadow-2xl max-w-xs sm:max-w-2xl md:max-w-4xl w-full max-h-[90vh] flex flex-col mx-2 sm:mx-4"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="notes-modal-title"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Notes CRM</h2>
+                <h2 id="notes-modal-title" className="text-xl font-bold text-gray-900">Notes CRM</h2>
                 <p className="text-sm text-gray-600">
                   Lead: <span className="font-medium">{leadName}</span>
                   {stats.total > 0 && (

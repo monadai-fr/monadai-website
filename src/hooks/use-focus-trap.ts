@@ -5,8 +5,9 @@ import { useEffect, useRef } from 'react'
 /**
  * Hook pour focus trap - accessibilité avancée
  * Confine le focus clavier dans un élément (modal, dropdown, etc.)
+ * + Fermeture Escape key
  */
-export function useFocusTrap(isActive: boolean) {
+export function useFocusTrap(isActive: boolean, onClose?: () => void) {
   const containerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -25,7 +26,15 @@ export function useFocusTrap(isActive: boolean) {
       setTimeout(() => firstElement.focus(), 100)
     }
 
-    const handleTabKey = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Escape key - fermer modale si onClose fourni
+      if (event.key === 'Escape' && onClose) {
+        event.preventDefault()
+        onClose()
+        return
+      }
+
+      // Tab key - focus trap
       if (event.key !== 'Tab') return
 
       if (event.shiftKey) {
@@ -43,12 +52,12 @@ export function useFocusTrap(isActive: boolean) {
       }
     }
 
-    container.addEventListener('keydown', handleTabKey)
+    container.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      container.removeEventListener('keydown', handleTabKey)
+      container.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isActive])
+  }, [isActive, onClose])
 
   return containerRef
 }

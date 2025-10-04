@@ -19,7 +19,7 @@ export default function ContactModal({ isOpen, onClose, lead, onSuccess }: Conta
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const focusRef = useFocusTrap(isOpen)
+  const focusRef = useFocusTrap(isOpen, onClose)
   
   // Empêcher scroll background quand modal ouverte
   useEffect(() => {
@@ -163,7 +163,7 @@ Au plaisir de vous rencontrer,`
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -171,17 +171,20 @@ Au plaisir de vous rencontrer,`
         >
           <motion.div
             ref={focusRef}
-            className="bg-white rounded-lg max-w-4xl md:max-w-6xl w-full max-h-[90vh] flex flex-col mx-2 sm:mx-4"
+            className="bg-white rounded-lg shadow-2xl max-w-4xl md:max-w-6xl w-full max-h-[90vh] flex flex-col mx-2 sm:mx-4"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contact-modal-title"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Contacter le lead</h2>
+                <h2 id="contact-modal-title" className="text-xl font-bold text-gray-900">Contacter le lead</h2>
                 <p className="text-sm text-gray-600">
                   Email à <span className="font-medium">{lead.name}</span> ({lead.email})
                 </p>

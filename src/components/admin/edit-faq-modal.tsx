@@ -22,7 +22,19 @@ export default function EditFAQModal({ isOpen, onClose, faq, onSuccess }: EditFA
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
-  const focusRef = useFocusTrap(isOpen)
+  const focusRef = useFocusTrap(isOpen, onClose)
+
+  // Empêcher scroll background
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   // Reset form quand la FAQ change
   useEffect(() => {
@@ -92,11 +104,14 @@ export default function EditFAQModal({ isOpen, onClose, faq, onSuccess }: EditFA
               ref={focusRef}
               className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="edit-faq-modal-title"
             >
-              <div className="p-6 border-b border-gray-100">
+              <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Modifier FAQ</h3>
+                    <h3 id="edit-faq-modal-title" className="text-xl font-bold text-gray-900">Modifier FAQ</h3>
                     <p className="text-sm text-gray-600 mt-1">
                       Section: <span className="font-medium">{faq.section}</span>
                     </p>
